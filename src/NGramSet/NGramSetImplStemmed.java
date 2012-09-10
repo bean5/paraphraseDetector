@@ -1,56 +1,26 @@
 package NGramSet;
 
-
-import java.util.ArrayList;
-import java.util.List;
-
-public class NGramSetImplStemmed extends NGramSetSimpleImpl implements NGramSet {
-	protected List<String> stemWords;
+public class NGramSetImplStemmed extends NGramSetImpl implements NGramSet {
+	public NGramSetImplStemmed(int size) {super(size);}
 	
-	public NGramSetImplStemmed(int size) {
-		super(size);
-		initialize(size);
-	}
+	public NGramSetImplStemmed(NGramSet other) {super(other);}
 	
-	protected void initialize(int size) {
-		super.initialize(size);
-		stemWords = new ArrayList<String>(size);
-	}
+	public NGramSetImplStemmed(NGramSetImplStemmed other) {this((NGramSetImpl) other);}
 	
-	public NGramSetImplStemmed(NGramSetImplStemmed other) {
-		super(other.getWordList().size());
-		initialize(other.size());
-		
-		for(String word : other.getWordList()) {
-			addWord(word);
+	@Override
+	protected String modifyWord(String word) {
+		String modifiedWord = null;
+		if(!matchCase) {
+			modifiedWord = new String(word).toLowerCase();
 		}
-		for(String word : other.getStemWordList()) {
-			addStemWord(word);
+		else {
+			modifiedWord = word;
 		}
-	}
-
-	public void processWord(String word) {
-		addWord(word);
-		position = count;
-		count++;
-		
-		String stemmed = findWordStem(word);
-		addStemWord(stemmed);
+		return findWordStem(modifiedWord);
 	}
 	
-	private void addStemWord(String stemmedWord) {
-		stemWords.add(stemmedWord);
-		if(wordCounts.containsKey(stemmedWord)) {
-			wordCounts.put(stemmedWord, wordCounts.get(stemmedWord)+1);
-		}
-		else
-			wordCounts.put(stemmedWord, 1);
-	}
-
-	protected List<String> getStemWordList() {return stemWords;}
-	
-	protected String findWordStem(String word) {		
-		PorterStemmer stem = new PorterStemmer();
+	protected String findWordStem(String word) {
+		final PorterStemmer stem = new PorterStemmer();
 		char[] letters = word.toCharArray();
 		for(int i = 0 ; i < letters.length; i++) {
 			stem.add(letters[i]);
@@ -62,56 +32,50 @@ public class NGramSetImplStemmed extends NGramSetSimpleImpl implements NGramSet 
 		return stemmed;
 	}
 	
-	protected void incrementValueForWord(String word) {
-		if(wordCounts.containsKey(word)) {
-			wordCounts.put(word, wordCounts.get(word)+1);
-		}
-		else {
-			wordCounts.put(word, 1);
-		}
-	}
-	
-	public void popFirstWord() {
-		String firstWord = stemWords.get(0);
-		//super.popFirstWord();
-		
-		assert(words.size() > 0);
-		assert(wordCounts.containsKey(firstWord));
-		
-		/*List<String> document = (side == 1) ? document1 : document2;
-		firstWord = document.get(position);
-		firstWord = findWordStem(firstWord);*/
-		if(wordCounts.get(firstWord) > 1) {
-			wordCounts.put(firstWord, wordCounts.get(firstWord)-1);
-		}
-		else {
-			wordCounts.remove(firstWord);
-		}
-		words.remove(0);
-		stemWords.remove(0);
-	}
-	
-	public String leftToString() {
-		StringBuilder st = new StringBuilder();
-		st.append(super.leftToString());
-		
-		assert(words.size() > 0);
-		assert(stemWords.size() > 0);
-		assert(words.size() == stemWords.size());
-		
-		st.append("\t[basis: ");
-		for(String word : stemWords) {
-			st.append(word);
-			st.append(' ');
-		}
-		st.append(']');
-		return st.toString();
-	}
-
 	@Override
-	public List<NGramSet> getRightMatches() {return null;}
-	//public List<NGramSetStemmed> getRightMatches() {return matches;}
-
-	@Override
-	public void addRightMatch(NGramSet n) {matches.add((NGramSetImplStemmed) n);}
+	public boolean isStopWord(String word) {
+		if(useStopWords == false)
+			return false;
+		return 
+			word.equals("The")
+			||
+			word.equals("the")
+			||
+			word.equals("And")
+			||
+			word.equals("and")
+			||
+			word.equals("Of")
+			||
+			word.equals("of")
+			||
+			word.equals("That")
+			||
+			word.equals("that")
+			||
+			word.equals("To")
+			||
+			word.equals("to")
+			||
+			word.equals("Thei")
+			||
+			word.equals("thei")
+			||
+			word.equals("Unto")
+			||
+			word.equals("unto")
+			||
+			word.equals("I")
+			||
+			word.equals("i")
+			||
+			word.equals("He")
+			||
+			word.equals("he")
+			||
+			word.equals("It")
+			||
+			word.equals("it")
+		;
+	}
 }

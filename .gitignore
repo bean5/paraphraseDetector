@@ -1,5 +1,6 @@
 *.class
 msi/*
+dist/*.jar
 *.lnk
 *.ini
 *.aip
@@ -9,3 +10,5 @@ msi/*
 *.doc
 *.docx
 *.odt
+dist/*
+intertext_results/*

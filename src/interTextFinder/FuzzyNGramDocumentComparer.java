@@ -1,27 +1,35 @@
 package interTextFinder;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import NGramSet.NGramSet;
 import NGramSet.NGramSetImplStemmed;
-import NGramSet.NGramSetSimpleImpl;
+import NGramSet.NGramSetImpl;
 
 public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements DocumentCommonalityFinder {
-	protected boolean isTesting = true;
+	protected boolean isTesting = false;
 	protected boolean STRICT = false;
 	protected boolean usePorterStemmer = false;
 	protected boolean matchCase = true;
+	protected int totalRightMatches = 0;
+	private boolean USESTOPWORDS = true;
 
 	public HashSet<NGramSet> findCommonNGrams(String string1, String string2, int min, int max) {
-		HashSet<NGramSet> foundNGrams = (HashSet<NGramSet>) new HashSet<T1>();
+		HashSet<NGramSet> NGramsWithMatches = new HashSet<NGramSet>();
 		
 		//ensure that min <= max
 		if(min > max) {
 			int temp = max;
 			max = min;
 			min = temp;
+			
+			System.out.println("Min greater than max; assuming the opposite parameterization.");
 		}
 		
 		char[] chars1 = string1.toCharArray();
@@ -29,104 +37,170 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 		
 		List<String> words1 = scanForWords(chars1);
 		List<String> words2 = scanForWords(chars2);
+		
 		if(isTesting) {
-			words1 = words1.subList(0, (200 > words1.size()) ? words1.size() : 200);
-			words2 = words2.subList(0, (200 > words2.size()) ? words2.size() : 200);
+			int maxSub = 1000;
+			words1 = words1.subList(0, (maxSub > words1.size()) ? words1.size() : maxSub);
+			words2 = words2.subList(0, (maxSub > words2.size()) ? words2.size() : maxSub);
 		}
-		
-		NGramSetSimpleImpl.setDocument1(words1);
-		NGramSetSimpleImpl.setDocument2(words2);
-		
-		for(int i = max; i <= max; i++) {
-			ArrayList<NGramSet> nGrams1 = getAllNGramsOfSize(words1, i, 1);
-			ArrayList<NGramSet> nGrams2 = getAllNGramsOfSize(words2, i, 2);
 
-			findAllCommon(foundNGrams, nGrams1, nGrams2, min);
-		}
-		mergeRepeats(foundNGrams, min, max);
-		rankResults(foundNGrams, min, max);
-		//printFindings(NGramSetStemmeds);
+		NGramSetImpl.setMatchCase(matchCase);
+		NGramSetImpl.setUseStopWords(USESTOPWORDS);
+		NGramSetImpl.setStrictness(STRICT);
+		NGramSetImpl.setMinSize(min);
+		NGramSetImpl.setMaxSize(max);
 		
-		return foundNGrams;
+		HashMap<String, List<NGramSet>> map = new HashMap<String, List<NGramSet>>();
+		ArrayList<NGramSet> nGrams1 = getAllNGramsOfSize(words1, max, null);
+		ArrayList<NGramSet> nGrams2 = getAllNGramsOfSize(words2, max, map);
+
+//		System.out.println("Words Left: " + nGrams1.size());
+//		System.out.println("Words Right: " + nGrams2.size());
+
+		findAllCommon(NGramsWithMatches, nGrams1, map);
+		
+		//organizeMatches(NGramsWithMatches);
+		
+		//mergeRepeats(NGramsWithMatches, min, max);
+		//rankResults(NGramsWithMatches, min, max);
+		
+		return NGramsWithMatches;
 	}
 
-	private void rankResults(HashSet<NGramSet> foundNGrams, int min, int max) {
-		// TODO Auto-generated method stub
+	private void organizeMatches(HashSet<NGramSet> nGramsWithMatches) {
+		Set<NGramSet> bst = new TreeSet<NGramSet>(nGramsWithMatches);
+		//nGramsWithMatches = new LinkedList<NGramSet>(bst.toArray());
 	}
 
-	private void mergeRepeats(HashSet<NGramSet> foundNGrams, int min, int max) {
-		// TODO Auto-generated method stub
-	}
+	private void rankResults(HashSet<NGramSet> foundNGrams, int min, int max) {}
 
-	protected void findAllCommon(HashSet<NGramSet> commons, ArrayList<NGramSet> nGrams1, ArrayList<NGramSet> nGrams2, int min) {
-		for(NGramSet set1 : nGrams1) {
-			for(NGramSet set2 : nGrams2) {
-				if(set1.containsAsSubSet(set2, min)) {
-					set1.addRightMatch(set2);
-					commons.add(set1);
+	private void mergeRepeats(HashSet<NGramSet> foundNGrams, int min, int max) {}
 
-//					if(set1.size() == 1) System.out.println("Left:\t" + set1.leftToString() + "\n");
-//					System.out.println("Right:\t" + set2.leftToString());
-				}
+	protected void findAllCommon(
+			HashSet<NGramSet> NGramsWithMatches, 
+			ArrayList<NGramSet> nGrams, 
+			HashMap<String, List<NGramSet>> map
+	) {
+		totalRightMatches = 0;
+		for(NGramSet ngram : nGrams) {
+			totalRightMatches += ngram.consume(map);
+			if(ngram.hasMatches()) {
+				NGramsWithMatches.add(ngram);
 			}
-//			if(set1.size() > 0) System.out.println("\n\n");
 		}
 	}
 
-	private ArrayList<NGramSet> getAllNGramsOfSize(List<String> words, int size, int side) {
-		if(usePorterStemmer) {		
-			NGramSetImplStemmed.setMaxSize(size);
-			
-			ArrayList<NGramSet> sets = new ArrayList<NGramSet>(words.size());
+	private ArrayList<NGramSet> getAllNGramsOfSize(List<String> words, int size, HashMap<String, List<NGramSet>> map) {
+		String processedWord = null;
+		ArrayList<NGramSet> sets = new ArrayList<NGramSet>(words.size());
+		final int documentSize = words.size();
+		
+		if(usePorterStemmer) {
 			NGramSetImplStemmed current = new NGramSetImplStemmed(size);
-			current.setSide(side);
 			
-			for(int i = 0; i < size; i++) {
-				current.processWord(words.get(i));
+			current.setDocument(words);
+			
+			for(int i = 0; i < size && i < documentSize; i++) {
+				processedWord = current.processWord(words.get(i));
+				
+				// if map is null, then tracking doesn't matter
+				// if processWord was null, it was a stop-word
+				if(map != null && processedWord != null) {
+					//System.out.println("Mapping: " + current.toString() + " for " + processedWord);
+					List<NGramSet> nGrams = map.get(processedWord);
+					if(nGrams != null) {
+						final int prevSize = nGrams.size();
+						
+						nGrams.add(current);
+						
+						assert(prevSize != map.get(processedWord).size());
+					}
+					else {
+						List<NGramSet> l = new ArrayList<NGramSet>();
+						l.add(current);
+						map.put(processedWord, l);
+					}
+				}
 			}
 			sets.add(current);
 			
 			NGramSetImplStemmed prev = current;
-			for(int i = size ; i < words.size(); i++) {
-				NGramSetImplStemmed newNGramSet = new NGramSetImplStemmed(prev);// new T1(prev);
+			for(int i = size ; i < documentSize; i++) {
+				current = new NGramSetImplStemmed((NGramSet) prev);
 				
-				newNGramSet.processWord(words.get(i));
-				newNGramSet.popFirstWord();
+				processedWord = current.processWord(words.get(i));
+				current.popFirstWord();
 				
-				sets.add(newNGramSet);
+				sets.add(current);
+				prev = current;
 				
-				prev = newNGramSet;
+				if(map == null || processedWord == null)
+					continue;
+				
+				List<String> relevantWords = current.getModifiedWordList();
+				for(String relevantWord : relevantWords) {
+					List<NGramSet> nGrams = map.get(relevantWord);
+					if(nGrams != null) {
+						nGrams.add(current);
+					}
+					else {
+						List<NGramSet> l = new ArrayList<NGramSet>();
+						l.add(current);
+						map.put(relevantWord, l);
+					}
+				}
 			}
-			NGramSetImplStemmed.resetCount();
-			return sets;
 		}
-		else {			
-			NGramSetSimpleImpl.setMaxSize(size);
+		else {
+			NGramSetImpl current = new NGramSetImpl(size);
 			
-			ArrayList<NGramSet> sets = new ArrayList<NGramSet>(words.size());
-			NGramSetSimpleImpl current = new NGramSetSimpleImpl(size);
+			current.setDocument(words);
 			
-			current.setSide(side);
-			
-			for(int i = 0; i < size; i++) {
-				current.processWord(words.get(i));
+			for(int i = 0; i < size && i < documentSize; i++) {
+				processedWord = current.processWord(words.get(i));
+				if(map != null && processedWord != null) {
+					List<NGramSet> nGrams = map.get(processedWord);
+					if(nGrams != null) {
+						nGrams.add(current);
+					}
+					else {
+						List<NGramSet> l = new ArrayList<NGramSet>();
+						l.add(current);
+						map.put(processedWord, l);
+					}
+				}
 			}
 			sets.add(current);
 			
-			NGramSetSimpleImpl prev = current;
-			for(int i = size ; i < words.size(); i++) {
-				NGramSetSimpleImpl newNGramSet = new NGramSetSimpleImpl(prev);// new T1(prev);
+			NGramSetImpl prev = current;
+			for(int i = size ; i < documentSize; i++) {
+				current = new NGramSetImpl((NGramSet) prev);
 				
-				newNGramSet.processWord(words.get(i));
-				newNGramSet.popFirstWord();
+				processedWord = current.processWord(words.get(i));
+				current.popFirstWord();
 				
-				sets.add(newNGramSet);
+				sets.add(current);
+				prev = current;
 				
-				prev = newNGramSet;
+				if(map == null || processedWord == null)
+					continue;
+				
+				List<String> relevantWords = current.getModifiedWordList();
+				for(String relevantWord : relevantWords) {
+					List<NGramSet> nGrams = map.get(relevantWord);
+					if(nGrams != null) {
+						nGrams.add(current);
+					}
+					else {
+						List<NGramSet> l = new ArrayList<NGramSet>();
+						l.add(current);
+						map.put(relevantWord, l);
+					}
+				}
 			}
-			NGramSetSimpleImpl.resetCount();
-			return sets;
 		}
+//		if(map != null) System.out.println("Map size: " + map.entrySet().size());
+		return sets;
 	}
 	
 	private List<String> scanForWords(char[] chars) {
@@ -138,65 +212,49 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 		int length = 0;
 		int max = chars.length;
 		
-		for(int i = 0; i < max; i++) {
-			char currChar = chars[i];
-			System.out.print(currChar);
-		}
-		/*System.out.println("");
-		words.add("The");
-		words.add("The");
-		words.add("The");
-		words.add("The");
-		words.add("The");
-		words.add("The");
-		words.add("The");
-		words.add("The");
-		words.add("The");
-		words.add("The");
-		words.add("The");
-		words.add("The");
-		words.add("The");
-		words.add("The");
-		words.add("The");
-		words.add("The");
-		words.add("The");
-		words.add("The");
-		if(true) return words;*/
+//		for(int i = 0; i < max; i++) {
+//			char currChar = chars[i];
+//			//System.out.print(currChar);
+//		}
 		
 		for(int i = 0; i < max; i++) {
 			char currChar = chars[i];
+			// TODO fix this because it is wrong.
 			char nextChar = chars[i];
 			
-			if(characterEvaluater.isAlphaOrDashFollowedByAlpha(currChar, nextChar)) { 
-				//str.append(currChar);
+			if(characterEvaluater.isAlphaOrDashFollowedByAlpha(currChar, nextChar)) {
 				str.setCharAt(length, currChar);
+				//System.out.print(currChar);
 				length++;
 			}
 			else if(length > 0) {
-				if(matchCase) {
+//				if(matchCase || true) {
 					words.add(str.substring(0, length));
-				} else {
-					System.out.println("Using lower case");
-					String newString = new String(str.substring(0, length).toLowerCase());
-					words.add(newString);
-				}
+//				} else {
+//					//System.out.println("Using lower case");
+//					String newString = new String(str.substring(0, length).toLowerCase());
+//					words.add(newString);
+//					//System.out.print(newString + ' ');
+//				}
 				total += length;
 				length = 0;
 			}
 		}
-		/*
+		
 		System.out.println("Total length: " + total);
 		System.out.println("Predicted length: " + chars.length/8);
 		System.out.println("Average length: " + total/words.size());
-		*/
+		
 		assert(chars.length == 0 || words.size() > 0);
 		
 		return words;
 	}
 
-	public void setStrict(boolean STRICT) {this.STRICT = STRICT;}
+	public void setStrict(boolean strictness) {STRICT = strictness;}
 	public void setPorterStemmerUsage(boolean usePorterStemmer) {this.usePorterStemmer = usePorterStemmer;}
 	public void setMatchCase(boolean matchCase) {this.matchCase  = matchCase;}
 	
 	public String toString() {return new String("");}
+
+	public void setUseStopWords(boolean useStopWords) {USESTOPWORDS  = useStopWords;}
 }

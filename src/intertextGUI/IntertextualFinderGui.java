@@ -13,7 +13,7 @@ public class IntertextualFinderGui {
 	protected static InterTextualFinder finder = new InterTextualFinder();
 	
 	// Initialize all swing objects.
-    private JFrame f = new JFrame("Paraphrase Locator Beta"); //create Frame
+    private JFrame f = new JFrame("Rephrase Locator Beta"); //create Frame
     private JPanel pnlNorth = new JPanel(); // North quadrant 
     private JPanel pnlCenter = new JPanel(); // Center quadrant
     private JPanel pnlSouth = new JPanel(); // South quadrant
@@ -24,9 +24,12 @@ public class IntertextualFinderGui {
     static String corporaBaseDir = "corpora/";
     static String resultsBaseDir = "intertext_results/";
 
-    private JTextField txtFieldFilePrimary = new JTextField(corporaBaseDir + "Abinadi.txt");
+    private JTextField txtFieldFilePrimary = new JTextField(corporaBaseDir + "");
+	private JTextField txtFieldFileSecondary = new JTextField(corporaBaseDir + "");
+//    private JTextField txtFieldFilePrimary = new JTextField(corporaBaseDir + "Abinadi.txt");
+//    private JTextField txtFieldFileSecondary = new JTextField(corporaBaseDir + "Alma 2.txt");
+    
     private JLabel lblFilePrimary = new JLabel("Primary File");
-    private JTextField txtFieldFileSecondary = new JTextField(corporaBaseDir + "Alma 2.txt");
     private JLabel lblFileSecondary = new JLabel("Secondary File");
     
     private JTextField txtFieldOutFile = new JTextField(resultsBaseDir + "results.txt");
@@ -41,19 +44,25 @@ public class IntertextualFinderGui {
     private JMenuItem mnuItemAbout = new JMenuItem("About"); 	// About Entry
     
     private JMenuItem mnuItemQuit = new JMenuItem("Quit"); 		// Quit sub item
-    
+
 	private JTextField min = new JTextField("5");
 	private JTextField max = new JTextField("6");
 	
-	private JCheckBox checkMatchCase = new JCheckBox("Match Case", false);
-	private JCheckBox checkStrict = new JCheckBox("Strict", false);
-	private JCheckBox checkPorterStemmer = new JCheckBox("Use Porter Stemmer", true);
+	private JLabel lblSecondaryMatchMin = new JLabel("Filter out primary matches with less than this many matches: ");
+	private JTextField minSecondarMatches = new JTextField("2");
 	
-	private JTextArea textArea = new JTextArea(10, 40);
+	private JCheckBox checkMatchCase = new JCheckBox("Match Case", false);
+	private JCheckBox checkStrict = new JCheckBox("Strict", true);
+	private JCheckBox checkPorterStemmer = new JCheckBox("Use Porter Stemmer", true);
+	private JCheckBox checkUseStopWords = new JCheckBox("Use Stop Words", true);
+	
+	private JTextArea textArea = new JTextArea(20, 80);
 	
     /** Constructor for the GUI */
     public IntertextualFinderGui(){
-    	checkPorterStemmer.setEnabled(false);
+    	//checkStrict.setEnabled(false);
+    	//checkPorterStemmer.setEnabled(false);
+    	//checkUseStopWords.setEnabled(false);
     	ActionListener clicked = new Clicked();
     	
 		// Set menubar
@@ -91,11 +100,12 @@ public class IntertextualFinderGui {
         
         JPanel secondMainBox = new JPanel();
         secondMainBox.setLayout(new BorderLayout());
-        
+
         JPanel options = new JPanel();
         options.add(checkMatchCase);
         options.add(checkStrict);
         options.add(checkPorterStemmer);
+        options.add(checkUseStopWords);
         //options.add(checkOptimize);
         
         min.addActionListener(clicked);
@@ -107,8 +117,15 @@ public class IntertextualFinderGui {
         options.add(max);
         max.setColumns(3);
         
+
+        JPanel secondOptions = new JPanel();
+        minSecondarMatches.setColumns(3);
+        secondOptions.add(lblSecondaryMatchMin);
+        secondOptions.add(minSecondarMatches);
+        
         secondMainBox.add(mainBox, BorderLayout.NORTH);
         secondMainBox.add(options, BorderLayout.CENTER);
+        secondMainBox.add(secondOptions, BorderLayout.SOUTH);
         
         // Setup Main Frame
         f.getContentPane().setLayout(new BorderLayout());
@@ -155,7 +172,7 @@ public class IntertextualFinderGui {
         	if(source == btnRun) {
         		min.selectAll();
         		min.setCaretPosition(min.getDocument().getLength());
-        		if(true)return;
+        		//if(true) return;
         		finder.findIntertextQuotesGivenParams(
 	    			txtFieldFilePrimary.getText().trim(), 
 	    			txtFieldFileSecondary.getText().trim(),
@@ -163,11 +180,11 @@ public class IntertextualFinderGui {
 	    			Integer.parseInt(max.getText().trim()), 
 	    			checkMatchCase.isSelected(), 
 	    			checkStrict.isSelected(),
-	    			checkPorterStemmer.isSelected()
+	    			checkPorterStemmer.isSelected(),
+	    			checkUseStopWords.isSelected(),
+	    			Integer.parseInt(minSecondarMatches.getText().trim())
 	        	);
-	        	textArea.setText(finder.toString());
-	        	
-	        	
+	        	textArea.setText(finder.toString());	        	
         	} else if(source == mnuItemSave) {
 	        	finder.saveTo(txtFieldOutFile.getText().trim());
         	} else if(source == mnuItemAbout) {

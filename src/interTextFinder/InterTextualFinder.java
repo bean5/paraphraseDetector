@@ -14,61 +14,70 @@ import java.util.List;
 import java.util.Scanner;
 
 import NGramSet.NGramSet;
-import NGramSet.NGramSetSimpleImpl;
+import NGramSet.NGramSetImpl;
 
 public class InterTextualFinder {
 	private String paramString;
-	private static FuzzyNGramDocumentComparer<NGramSetSimpleImpl> comparer;
+	private static FuzzyNGramDocumentComparer<NGramSetImpl> comparer;
 	private static HashSet<NGramSet> commonNGrams;
 
-	public void findIntertextQuotesGivenParams(String primarySourcePath,
-			String secondarySourcePath,
-			//String outFilePath,
-			int minimumMatches,
-			int wordSpanSize, boolean matchCase, boolean strictSearch,
-			boolean usePorterStemmer) {
-		// or use a glob of the corpora
-		// File[] fileList = {new File(corporaBaseDir + "Abinadi.txt"), new
-		// File(corporaBaseDir + "Alma 2.txt")};
-		// File[] fileList = {new File(corporaBaseDir + "Abinadi.txt"), new
-		// File(corporaBaseDir + "Alma 39-42.txt")};
-		File[] fileList = { new File(primarySourcePath),
-				new File(secondarySourcePath) };
+	public void findIntertextQuotesGivenParams(
+			String primarySourcePath, String secondarySourcePath, //String outFilePath,
+			int minimumMatches, int wordSpanSize, 
+			boolean matchCase, boolean strictSearch, boolean usePorterStemmer, boolean useStopWords, 
+			int minimumSecondaryMatches
+	) {
+		File[] fileList = { new File(primarySourcePath), new File(secondarySourcePath) };
 
 		List<String> files = new ArrayList<String>(2);
 
-		readInFiles(fileList, files, matchCase);
+		readInFiles(fileList, files);
 
 		double start = System.currentTimeMillis();
-
-		// NGramSet.STRICT = strictSearch;
-
-		comparer = new FuzzyNGramDocumentComparer<NGramSetSimpleImpl>();
+		
+		comparer = new FuzzyNGramDocumentComparer<NGramSetImpl>();
 		comparer.setMatchCase(matchCase);
 		comparer.setStrict(strictSearch);
 		comparer.setPorterStemmerUsage(usePorterStemmer);
+		comparer.setUseStopWords(useStopWords);
 		commonNGrams = comparer.findCommonNGrams(files.get(0), files.get(1), minimumMatches, wordSpanSize);
 
 		double end = System.currentTimeMillis();
 		double totalTime = end - start;
 		totalTime /= (1000 * 6);// convert to minutes
 		totalTime = totalTime / 10;
+		
+		filterNGrams(minimumSecondaryMatches);
 
-		paramString = convertParametersToString(primarySourcePath,
-				secondarySourcePath, minimumMatches, wordSpanSize, matchCase,
-				strictSearch, usePorterStemmer, totalTime);
+		paramString = convertParametersToString(
+			primarySourcePath, secondarySourcePath, minimumMatches, wordSpanSize, minimumSecondaryMatches, 
+			matchCase, strictSearch, usePorterStemmer, useStopWords, totalTime
+		);
 	}
 	
+	private void filterNGrams(int minimumSecondaryMatches) {
+		HashSet<NGramSet> filteredCommonNGrams = new HashSet<NGramSet>(commonNGrams.size());
+		
+		for(NGramSet ngram : commonNGrams) {
+			if(ngram.size() >= minimumSecondaryMatches) {
+				filteredCommonNGrams.add(ngram);
+			}
+		}
+		commonNGrams = filteredCommonNGrams;
+	}
+
 	public static String toString(String paramsAsString, HashSet<NGramSet> commonNGrams) {
 		StringBuilder str = new StringBuilder();
 		
 		int matchCount = 0;
 		Iterator<NGramSet> itr = commonNGrams.iterator();
+		
+		//for(NGramSet n : commonNGrams) {
 		while(itr.hasNext()) {
-			NGramSet n = itr.next();
-			str.append(n.toString());
+			NGramSet nGram = itr.next();
+			str.append(nGram.toString());
 			str.append("\n\n");
-			matchCount += ((NGramSet) n).size();
+			matchCount += ((NGramSet) nGram).size();
 		}
 		
 		String stringToSaveToFile =
@@ -80,10 +89,10 @@ public class InterTextualFinder {
 		return stringToSaveToFile;
 	}
 
-	private static String convertParametersToString(String primarySource,
-			String secondarySource, int minimumMatches, int wordSpanSize,
-			boolean matchCase, boolean strictSearch, boolean usePorterStemmer,
-			double totalTime) {
+	private static String convertParametersToString(
+		String primarySource, String secondarySource, int minimumMatches, int wordSpanSize, int minimumSecondaryMatches, 
+		boolean matchCase, boolean strictSearch, boolean usePorterStemmer, boolean useStopWords, double totalTime
+	) {
 		String params = new String();
 
 		params += "Primary Source: " + primarySource + "\n";
@@ -107,17 +116,24 @@ public class InterTextualFinder {
 		else
 			params += "No" + "\n";
 
+		params += "Use Stop Words: ";
+		if (useStopWords)
+			params += "Yes" + "\n";
+		else
+			params += "No" + "\n";
+
 		params += "Fuzzy Search Parameters: " + minimumMatches + "/"
 				+ wordSpanSize + "\n";
+		
+		params += "Require at least " + minimumSecondaryMatches + " secondary matches\n";
 
 		params += "Time to complete: " + totalTime + " minutes.\n";
 		return params;
 	}
 
-	private static void readInFiles(File[] fileList, List<String> files,
-			boolean matchCase) {
-		System.out
-				.println("Consider making everything compatible with unicode");
+	private static void readInFiles(File[] fileList, List<String> files) {
+		// TODO
+		System.out.println("Consider making everything compatible with unicode.\n");
 		for (File f : fileList) {
 			FileInputStream fis = null;
 			// InputStreamReader in = null;
@@ -128,8 +144,7 @@ public class InterTextualFinder {
 					// in = new InputStreamReader(fis, "UTF-8");
 					String newLine = read(f.toString(), "UTF-8");
 					//String newLine = read(f.toString(), "unicode");
-					if (matchCase)
-						newLine = new String(newLine.toLowerCase());
+					
 					files.add(newLine);
 				}
 			} catch (UnsupportedEncodingException e) {
@@ -142,8 +157,7 @@ public class InterTextualFinder {
 		}
 	}
 
-	private static String read(String filename, String fEncoding)
-			throws IOException {
+	private static String read(String filename, String fEncoding) throws IOException {
 		File fFilename = new File(filename);
 
 		StringBuilder text = new StringBuilder();
