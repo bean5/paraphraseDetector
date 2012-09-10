@@ -1,0 +1,11 @@
+*.class
+msi/*
+*.lnk
+*.ini
+*.aip
+*.msi
+!.java
+*.txt
+*.doc
+*.docx
+*.odt
