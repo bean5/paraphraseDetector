@@ -13,8 +13,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane.MaximizeAction;
-
 import NGramSet.NGramSet;
 import NGramSet.NGramSetImpl;
 
@@ -25,9 +23,7 @@ public class InterTextualFinder
 	private static HashSet<NGramSet>									commonNGrams;
 
 	private String primarySourcePath;
-	private String primarySourceText;
 	private String secondarySourcePath;
-	private String secondarySourceText;
 	private int minimumMatches = 1;
 	private int minimumSecondaryMatches = 1;
 	private int windowSize = 1;
@@ -241,21 +237,11 @@ public class InterTextualFinder
 		this.primarySourcePath = path;
 	}
 
-	public void setPrimaryText(String text)
-	{
-		this.primarySourceText = text;
-	}
-
 	public void setSecondaryPath(String path)
 	{
 		this.secondarySourcePath = path;
 	}
-
-	public void setSecondaryText(String text)
-	{
-		this.secondarySourceText = text;
-	}
-
+	
 	public void setMinimumMatches(int i)
 	{
 		this.minimumMatches = i;
