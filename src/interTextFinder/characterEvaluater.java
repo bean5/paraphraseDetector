@@ -1,4 +1,4 @@
-package interTextFinder;
+package interTextFinder ;
 
 public class characterEvaluater {
 	public static boolean isAlphaOrDashFollowedByAlpha(char currChar, char nextChar) {

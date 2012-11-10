@@ -12,33 +12,38 @@ import NGramSet.NGramSet;
 import NGramSet.NGramSetImplStemmed;
 import NGramSet.NGramSetImpl;
 
-public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements DocumentCommonalityFinder {
-	protected boolean isTesting = false;
-	protected boolean STRICT = false;
-	protected boolean usePorterStemmer = false;
-	protected boolean matchCase = true;
-	protected int totalRightMatches = 0;
-	private boolean USESTOPWORDS = true;
+public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements DocumentCommonalityFinder
+{
+	protected boolean	isTesting			= false;
+	protected boolean	STRICT				= false;
+	protected boolean	usePorterStemmer	= false;
+	protected boolean	matchCase			= true;
+	protected int		totalRightMatches	= 0;
+	private boolean	USESTOPWORDS		= true;
 
-	public HashSet<NGramSet> findCommonNGrams(String string1, String string2, int min, int max) {
+	public HashSet<NGramSet> findCommonNGrams(String string1, String string2, int min, int max, boolean maximizePrimaryWindowSize)
+	{
 		HashSet<NGramSet> NGramsWithMatches = new HashSet<NGramSet>();
-		
-		//ensure that min <= max
-		if(min > max) {
+
+		// ensure that min <= max
+		if (min > max)
+		{
 			int temp = max;
 			max = min;
 			min = temp;
-			
+
 			System.out.println("Min greater than max; assuming the opposite parameterization.");
 		}
-		
+
 		char[] chars1 = string1.toCharArray();
 		char[] chars2 = string2.toCharArray();
-		
+
 		List<String> words1 = scanForWords(chars1);
 		List<String> words2 = scanForWords(chars2);
-		
-		if(isTesting) {
+
+		//when testing, restrist the length of documents to be small
+		if (isTesting)
+		{
 			int maxSub = 1000;
 			words1 = words1.subList(0, (maxSub > words1.size()) ? words1.size() : maxSub);
 			words2 = words2.subList(0, (maxSub > words2.size()) ? words2.size() : maxSub);
@@ -49,73 +54,92 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 		NGramSetImpl.setStrictness(STRICT);
 		NGramSetImpl.setMinSize(min);
 		NGramSetImpl.setMaxSize(max);
-		
+
 		HashMap<String, List<NGramSet>> map = new HashMap<String, List<NGramSet>>();
-		ArrayList<NGramSet> nGrams1 = getAllNGramsOfSize(words1, max, null);
+		
+		ArrayList<NGramSet> nGrams1;
+		if(maximizePrimaryWindowSize)
+			nGrams1 = getAllNGramsOfSize(words1, words1.size(), null);
+		else
+			nGrams1 = getAllNGramsOfSize(words1, max, null);
+		
 		ArrayList<NGramSet> nGrams2 = getAllNGramsOfSize(words2, max, map);
 
-//		System.out.println("Words Left: " + nGrams1.size());
-//		System.out.println("Words Right: " + nGrams2.size());
+		// System.out.println("Words Left: " + nGrams1.size());
+		// System.out.println("Words Right: " + nGrams2.size());
 
 		findAllCommon(NGramsWithMatches, nGrams1, map);
 		
-		//organizeMatches(NGramsWithMatches);
-		
-		//mergeRepeats(NGramsWithMatches, min, max);
-		//rankResults(NGramsWithMatches, min, max);
-		
+		// organizeMatches(NGramsWithMatches);
+
+		// mergeRepeats(NGramsWithMatches, min, max);
+		// rankResults(NGramsWithMatches, min, max);
+
 		return NGramsWithMatches;
 	}
 
-	private void organizeMatches(HashSet<NGramSet> nGramsWithMatches) {
+	private void organizeMatches(HashSet<NGramSet> nGramsWithMatches)
+	{
 		Set<NGramSet> bst = new TreeSet<NGramSet>(nGramsWithMatches);
-		//nGramsWithMatches = new LinkedList<NGramSet>(bst.toArray());
+		// nGramsWithMatches = new LinkedList<NGramSet>(bst.toArray());
 	}
 
-	private void rankResults(HashSet<NGramSet> foundNGrams, int min, int max) {}
+	private void rankResults(HashSet<NGramSet> foundNGrams, int min, int max)
+	{
+	}
 
-	private void mergeRepeats(HashSet<NGramSet> foundNGrams, int min, int max) {}
+	private void mergeRepeats(HashSet<NGramSet> foundNGrams, int min, int max)
+	{
+	}
 
-	protected void findAllCommon(
-			HashSet<NGramSet> NGramsWithMatches, 
-			ArrayList<NGramSet> nGrams, 
-			HashMap<String, List<NGramSet>> map
-	) {
+	protected void findAllCommon(HashSet<NGramSet> NGramsWithMatches, ArrayList<NGramSet> nGrams,
+					HashMap<String, List<NGramSet>> map)
+	{
 		totalRightMatches = 0;
-		for(NGramSet ngram : nGrams) {
+		for (NGramSet ngram : nGrams)
+		{
 			totalRightMatches += ngram.consume(map);
-			if(ngram.hasMatches()) {
+			if (ngram.hasMatches())
+			{
 				NGramsWithMatches.add(ngram);
 			}
 		}
 	}
 
-	private ArrayList<NGramSet> getAllNGramsOfSize(List<String> words, int size, HashMap<String, List<NGramSet>> map) {
+	private ArrayList<NGramSet> getAllNGramsOfSize(List<String> words, int size,
+					HashMap<String, List<NGramSet>> map)
+	{
 		String processedWord = null;
 		ArrayList<NGramSet> sets = new ArrayList<NGramSet>(words.size());
 		final int documentSize = words.size();
-		
-		if(usePorterStemmer) {
+
+		if (usePorterStemmer)
+		{
 			NGramSetImplStemmed current = new NGramSetImplStemmed(size);
-			
+
 			current.setDocument(words);
-			
-			for(int i = 0; i < size && i < documentSize; i++) {
+
+			for (int i = 0; i < size && i < documentSize; i++)
+			{
 				processedWord = current.processWord(words.get(i));
-				
+
 				// if map is null, then tracking doesn't matter
 				// if processWord was null, it was a stop-word
-				if(map != null && processedWord != null) {
-					//System.out.println("Mapping: " + current.toString() + " for " + processedWord);
+				if (map != null && processedWord != null)
+				{
+					// System.out.println("Mapping: " + current.toString() + " for "
+					// + processedWord);
 					List<NGramSet> nGrams = map.get(processedWord);
-					if(nGrams != null) {
+					if (nGrams != null)
+					{
 						final int prevSize = nGrams.size();
-						
+
 						nGrams.add(current);
-						
-						assert(prevSize != map.get(processedWord).size());
+
+						assert (prevSize != map.get(processedWord).size());
 					}
-					else {
+					else
+					{
 						List<NGramSet> l = new ArrayList<NGramSet>();
 						l.add(current);
 						map.put(processedWord, l);
@@ -123,27 +147,30 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 				}
 			}
 			sets.add(current);
-			
+
 			NGramSetImplStemmed prev = current;
-			for(int i = size ; i < documentSize; i++) {
+			for (int i = size; i < documentSize; i++)
+			{
 				current = new NGramSetImplStemmed((NGramSet) prev);
-				
+
 				processedWord = current.processWord(words.get(i));
 				current.popFirstWord();
-				
+
 				sets.add(current);
 				prev = current;
-				
-				if(map == null || processedWord == null)
-					continue;
-				
+
+				if (map == null || processedWord == null) continue;
+
 				List<String> relevantWords = current.getModifiedWordList();
-				for(String relevantWord : relevantWords) {
+				for (String relevantWord : relevantWords)
+				{
 					List<NGramSet> nGrams = map.get(relevantWord);
-					if(nGrams != null) {
+					if (nGrams != null)
+					{
 						nGrams.add(current);
 					}
-					else {
+					else
+					{
 						List<NGramSet> l = new ArrayList<NGramSet>();
 						l.add(current);
 						map.put(relevantWord, l);
@@ -151,19 +178,24 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 				}
 			}
 		}
-		else {
+		else
+		{
 			NGramSetImpl current = new NGramSetImpl(size);
-			
+
 			current.setDocument(words);
-			
-			for(int i = 0; i < size && i < documentSize; i++) {
+
+			for (int i = 0; i < size && i < documentSize; i++)
+			{
 				processedWord = current.processWord(words.get(i));
-				if(map != null && processedWord != null) {
+				if (map != null && processedWord != null)
+				{
 					List<NGramSet> nGrams = map.get(processedWord);
-					if(nGrams != null) {
+					if (nGrams != null)
+					{
 						nGrams.add(current);
 					}
-					else {
+					else
+					{
 						List<NGramSet> l = new ArrayList<NGramSet>();
 						l.add(current);
 						map.put(processedWord, l);
@@ -171,27 +203,30 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 				}
 			}
 			sets.add(current);
-			
+
 			NGramSetImpl prev = current;
-			for(int i = size ; i < documentSize; i++) {
+			for (int i = size; i < documentSize; i++)
+			{
 				current = new NGramSetImpl((NGramSet) prev);
-				
+
 				processedWord = current.processWord(words.get(i));
 				current.popFirstWord();
-				
+
 				sets.add(current);
 				prev = current;
-				
-				if(map == null || processedWord == null)
-					continue;
-				
+
+				if (map == null || processedWord == null) continue;
+
 				List<String> relevantWords = current.getModifiedWordList();
-				for(String relevantWord : relevantWords) {
+				for (String relevantWord : relevantWords)
+				{
 					List<NGramSet> nGrams = map.get(relevantWord);
-					if(nGrams != null) {
+					if (nGrams != null)
+					{
 						nGrams.add(current);
 					}
-					else {
+					else
+					{
 						List<NGramSet> l = new ArrayList<NGramSet>();
 						l.add(current);
 						map.put(relevantWord, l);
@@ -199,62 +234,96 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 				}
 			}
 		}
-//		if(map != null) System.out.println("Map size: " + map.entrySet().size());
+		// if(map != null) System.out.println("Map size: " +
+		// map.entrySet().size());
 		return sets;
 	}
-	
-	private List<String> scanForWords(char[] chars) {
-		List<String> words = new ArrayList<String>(chars.length/4);//assume that the average word length is 4
+
+	private List<String> scanForWords(char[] chars)
+	{
+		List<String> words = new ArrayList<String>(chars.length / 4);// assume
+																							// that the
+																							// average
+																							// word
+																							// length
+																							// is 4
 		StringBuilder str = new StringBuilder();
 		str.setLength(30);
 
 		int total = 0;
 		int length = 0;
 		int max = chars.length;
-		
-//		for(int i = 0; i < max; i++) {
-//			char currChar = chars[i];
-//			//System.out.print(currChar);
-//		}
-		
-		for(int i = 0; i < max; i++) {
+
+		// for(int i = 0; i < max; i++) {
+		// char currChar = chars[i];
+		// //System.out.print(currChar);
+		// }
+
+		for (int i = 0; i < max; i++)
+		{
 			char currChar = chars[i];
 			// TODO fix this because it is wrong.
 			char nextChar = chars[i];
-			
-			if(characterEvaluater.isAlphaOrDashFollowedByAlpha(currChar, nextChar)) {
+
+			if (characterEvaluater.isAlphaOrDashFollowedByAlpha(currChar, nextChar))
+			{
 				str.setCharAt(length, currChar);
-				//System.out.print(currChar);
+				// System.out.print(currChar);
 				length++;
 			}
-			else if(length > 0) {
-//				if(matchCase || true) {
-					words.add(str.substring(0, length));
-//				} else {
-//					//System.out.println("Using lower case");
-//					String newString = new String(str.substring(0, length).toLowerCase());
-//					words.add(newString);
-//					//System.out.print(newString + ' ');
-//				}
+			else if (length > 0)
+			{
+				// if(matchCase || true) {
+				words.add(str.substring(0, length));
+				// } else {
+				// //System.out.println("Using lower case");
+				// String newString = new String(str.substring(0,
+				// length).toLowerCase());
+				// words.add(newString);
+				// //System.out.print(newString + ' ');
+				// }
 				total += length;
 				length = 0;
 			}
 		}
-		
+
 		System.out.println("Total length: " + total);
-		System.out.println("Predicted length: " + chars.length/8);
-		System.out.println("Average length: " + total/words.size());
-		
-		assert(chars.length == 0 || words.size() > 0);
-		
+		System.out.println("Predicted length: " + chars.length / 8);
+		System.out.println("Average length: " + total / words.size());
+
+		assert (chars.length == 0 || words.size() > 0);
+
 		return words;
 	}
 
-	public void setStrict(boolean strictness) {STRICT = strictness;}
-	public void setPorterStemmerUsage(boolean usePorterStemmer) {this.usePorterStemmer = usePorterStemmer;}
-	public void setMatchCase(boolean matchCase) {this.matchCase  = matchCase;}
-	
-	public String toString() {return new String("");}
+	public void setStrict(boolean strictness)
+	{
+		STRICT = strictness;
+	}
 
-	public void setUseStopWords(boolean useStopWords) {USESTOPWORDS  = useStopWords;}
+	public void setPorterStemmerUsage(boolean usePorterStemmer)
+	{
+		this.usePorterStemmer = usePorterStemmer;
+	}
+
+	public void setMatchCase(boolean matchCase)
+	{
+		this.matchCase = matchCase;
+	}
+
+	public String toString()
+	{
+		return new String("");
+	}
+
+	public void setUseStopWords(boolean useStopWords)
+	{
+		USESTOPWORDS = useStopWords;
+	}
+
+	public String toStringStopWordsToStringOfSize(int i)
+	{
+		// TODO Auto-generated method stub
+		return "";
+	}
 }

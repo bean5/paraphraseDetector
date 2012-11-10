@@ -49,12 +49,13 @@ public class IntertextualFinderGui {
 	private JTextField max = new JTextField("6");
 	
 	private JLabel lblSecondaryMatchMin = new JLabel("Filter out primary matches with less than this many matches: ");
-	private JTextField minSecondarMatches = new JTextField("2");
+	private JTextField minSecondaryMatches = new JTextField("2");
 	
 	private JCheckBox checkMatchCase = new JCheckBox("Match Case", false);
 	private JCheckBox checkStrict = new JCheckBox("Strict", true);
 	private JCheckBox checkPorterStemmer = new JCheckBox("Use Porter Stemmer", true);
 	private JCheckBox checkUseStopWords = new JCheckBox("Use Stop Words", true);
+	private JCheckBox checkMaximizePrimaryWindow = new JCheckBox("Maximize Primary Window Size", false);
 	
 	private JTextArea textArea = new JTextArea(20, 80);
 	
@@ -106,6 +107,7 @@ public class IntertextualFinderGui {
         options.add(checkStrict);
         options.add(checkPorterStemmer);
         options.add(checkUseStopWords);
+        options.add(checkMaximizePrimaryWindow);
         //options.add(checkOptimize);
         
         min.addActionListener(clicked);
@@ -119,9 +121,9 @@ public class IntertextualFinderGui {
         
 
         JPanel secondOptions = new JPanel();
-        minSecondarMatches.setColumns(3);
+        minSecondaryMatches.setColumns(3);
         secondOptions.add(lblSecondaryMatchMin);
-        secondOptions.add(minSecondarMatches);
+        secondOptions.add(minSecondaryMatches);
         
         secondMainBox.add(mainBox, BorderLayout.NORTH);
         secondMainBox.add(options, BorderLayout.CENTER);
@@ -173,17 +175,21 @@ public class IntertextualFinderGui {
         		min.selectAll();
         		min.setCaretPosition(min.getDocument().getLength());
         		//if(true) return;
-        		finder.findIntertextQuotesGivenParams(
-	    			txtFieldFilePrimary.getText().trim(), 
-	    			txtFieldFileSecondary.getText().trim(),
-	    			Integer.parseInt(min.getText().trim()), 
-	    			Integer.parseInt(max.getText().trim()), 
-	    			checkMatchCase.isSelected(), 
-	    			checkStrict.isSelected(),
-	    			checkPorterStemmer.isSelected(),
-	    			checkUseStopWords.isSelected(),
-	    			Integer.parseInt(minSecondarMatches.getText().trim())
-	        	);
+
+        		finder.setPrimaryPath(txtFieldFilePrimary.getText().trim());
+        		finder.setSecondaryPath(txtFieldFilePrimary.getText().trim());
+        		
+        		finder.setMinimumMatches(Integer.parseInt(min.getText().trim()));
+        		finder.setWindowSize(Integer.parseInt(max.getText().trim()));
+        		finder.setMinimumSecondaryMatches(Integer.parseInt(minSecondaryMatches.getText().trim()));
+        		
+        		finder.setMatchCase(checkMatchCase.isSelected());
+        		finder.setStrictness(checkStrict.isSelected());
+        		finder.setUsePorterStemmer(checkPorterStemmer.isSelected());
+        		finder.setMaximizePrimaryWindow(checkMaximizePrimaryWindow.isSelected());
+        		
+        		finder.findIntertextQuotesFromFiles();
+        		
 	        	textArea.setText(finder.toString());	        	
         	} else if(source == mnuItemSave) {
 	        	finder.saveTo(txtFieldOutFile.getText().trim());

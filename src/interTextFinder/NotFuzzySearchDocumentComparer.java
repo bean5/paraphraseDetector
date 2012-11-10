@@ -14,8 +14,8 @@ public class NotFuzzySearchDocumentComparer<T1 extends NGramSet> extends FuzzyNG
 	 * @see interTextFinder.FuzzyNGramDocumentComparer#findCommonNGrams(java.lang.String, java.lang.String, int, int)
 	 * 
 	 */
-	public HashSet<NGramSet> findCommonNGrams(String string1, String string2, int min, int max) {
-		HashSet<NGramSet> NGramSetStemmeds = super.findCommonNGrams(string1, string2, min, max);
+	public HashSet<NGramSet> findCommonNGrams(String string1, String string2, int min, int max, boolean maximizePrimaryWindowSize) {
+		HashSet<NGramSet> NGramSetStemmeds = super.findCommonNGrams(string1, string2, min, max, maximizePrimaryWindowSize);
 		
 		NGramSetStemmeds = useFuzzyMatchesToDeriveHardMatches(NGramSetStemmeds, min, max);
 		
