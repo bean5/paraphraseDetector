@@ -32,7 +32,7 @@ public class NGramSetImpl implements NGramSet
 
 	public NGramSetImpl(NGramSet other)
 	{
-		initialize(other.size());
+		initialize(other.getMaxSize());
 
 		document = other.getDocument();
 		position = 0;
