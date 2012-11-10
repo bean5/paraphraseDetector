@@ -187,6 +187,7 @@ public class IntertextualFinderGui {
         		finder.setStrictness(checkStrict.isSelected());
         		finder.setUsePorterStemmer(checkPorterStemmer.isSelected());
         		finder.setMaximizePrimaryWindow(checkMaximizePrimaryWindow.isSelected());
+        		finder.setUseStopWords(checkUseStopWords.isSelected());
         		
         		finder.findIntertextQuotesFromFiles();
         		

@@ -277,4 +277,9 @@ public class InterTextualFinder
 		this.maximizePrimaryWindowSize = selected;
 	}
 
+	public void setUseStopWords(boolean selected)
+	{
+		this.useStopWords = selected;
+	}
+
 }
