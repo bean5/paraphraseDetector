@@ -198,7 +198,7 @@ public class IntertextualFinderGui
 
 	public class Clicked implements ActionListener
 	{
-		private JFileChooser	fc;
+//		private JFileChooser	fc;
 
 		public void actionPerformed(ActionEvent e)
 		{
