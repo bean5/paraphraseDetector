@@ -59,7 +59,7 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 		
 		int leftMax = (words1.size() <= max || maximizePrimaryWindowSize) ? words1.size() : max;
 		int rightMax = (words2.size() <= max) ? words2.size() - 1 : max;
-		NGramSetImpl.setMaxSize(rightMax);
+//		NGramSetImpl.setMaxSize(rightMax);
 
 		HashMap<String, List<NGramSet>> map = new HashMap<String, List<NGramSet>>();
 		
@@ -155,7 +155,7 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 		if (usePorterStemmer)
 		{
 			NGramSetImplStemmed current = new NGramSetImplStemmed(size);
-
+			current.setMaxSize(size);
 			current.setDocument(words);
 
 			for (int i = 0; i < size && i < documentSize; i++)
@@ -368,7 +368,10 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 
 	public String errorsToString()
 	{
-		String errorString = "";
+		if(errors == null || errors.size() == 0)
+			return "";
+
+		String errorString = "Notes:\n";	
 		for(Error e : errors)
 		{
 			errorString += e.getMessage() + "\n";

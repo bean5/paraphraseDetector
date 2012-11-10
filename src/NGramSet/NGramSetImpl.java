@@ -10,7 +10,7 @@ import java.util.Set;
 public class NGramSetImpl implements NGramSet
 {
 	protected static int							minSize;
-	protected static int							maxSize;
+	protected int									maxSize;
 	protected static boolean					matchCase			= false;
 	protected static boolean					useStopWords		= true;
 	protected static boolean					useSrictMatching	= true;
@@ -36,10 +36,7 @@ public class NGramSetImpl implements NGramSet
 
 		document = other.getDocument();
 		position = 0;
-
-		// for(String word : other.getWordList()) {
-		// addWord(word);
-		// }
+		
 		for (String word : other.getModifiedWordList())
 		{
 			processModifiedWord(word);
@@ -53,6 +50,7 @@ public class NGramSetImpl implements NGramSet
 		modifiedWords = new ArrayList<String>(size);
 		wordCounts = new HashMap<String, Integer>(size);
 		matches = new HashMap<NGramSet, Integer>();
+		this.maxSize = size;
 	}
 
 	// protected void addWord(String word) {words.add(word);}
@@ -358,7 +356,7 @@ public class NGramSetImpl implements NGramSet
 		minSize = min;
 	}
 
-	public static void setMaxSize(int size)
+	public void setMaxSize(int size)
 	{
 		maxSize = size;
 	}
