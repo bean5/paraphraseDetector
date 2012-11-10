@@ -15,7 +15,8 @@ public class IntertextualFinderGui
 	protected static InterTextualFinder	finder							= new InterTextualFinder();
 
 	// Initialize all swing objects.
-	private JFrame								f									= new JFrame("Rephrase Locator Beta");														// create
+	private JFrame								f									= new JFrame(
+																										"Rephrase Locator Beta");														// create
 																																																// Frame
 	private JPanel								pnlNorth							= new JPanel();																					// North
 																																																// quadrant
@@ -89,7 +90,7 @@ public class IntertextualFinderGui
 	/** Constructor for the GUI */
 	public IntertextualFinderGui()
 	{
-		// checkStrict.setEnabled(false);
+		checkStrict.setEnabled(false);
 		// checkPorterStemmer.setEnabled(false);
 		// checkUseStopWords.setEnabled(false);
 		ActionListener clicked = new Clicked();
@@ -198,7 +199,7 @@ public class IntertextualFinderGui
 
 	public class Clicked implements ActionListener
 	{
-//		private JFileChooser	fc;
+		// private JFileChooser fc;
 
 		public void actionPerformed(ActionEvent e)
 		{
