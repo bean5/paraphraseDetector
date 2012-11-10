@@ -22,22 +22,20 @@ public class InterTextualFinder
 	private static FuzzyNGramDocumentComparer<NGramSetImpl>	comparer;
 	private static HashSet<NGramSet>									commonNGrams;
 
-	private String primarySourcePath;
-	private String secondarySourcePath;
-	private int minimumMatches = 1;
-	private int minimumSecondaryMatches = 1;
-	private int windowSize = 1;
-	
-	boolean matchCase = false;
-	boolean maximizePrimaryWindowSize = false;
-	boolean strictSearch = true;
-	boolean usePorterStemmer = true;
-	boolean useStopWords = true;
+	private String															primarySourcePath;
+	private String															secondarySourcePath;
+	private int																minimumMatches					= 1;
+	private int																minimumSecondaryMatches		= 1;
+	private int																windowSize						= 1;
 
-	public void findIntertextQuotesGivenParamsFromStrings(
-					String primarySourceText,
-					String secondarySourceText
-	)
+	boolean																	matchCase						= false;
+	boolean																	maximizePrimaryWindowSize	= false;
+	boolean																	strictSearch					= true;
+	boolean																	usePorterStemmer				= true;
+	boolean																	useStopWords					= true;
+
+	public void findIntertextQuotesGivenParamsFromStrings(String primarySourceText,
+					String secondarySourceText)
 	{
 		// if(maximizePrimaryWindowSize) minimumMatches = 1;
 
@@ -229,9 +227,8 @@ public class InterTextualFinder
 		else return toString(paramString, commonNGrams).replaceAll("\n",
 						System.getProperty("line.separator"));
 	}
-	
 
-	//setters 
+	// setters
 	public void setPrimaryPath(String path)
 	{
 		this.primarySourcePath = path;
@@ -241,7 +238,7 @@ public class InterTextualFinder
 	{
 		this.secondarySourcePath = path;
 	}
-	
+
 	public void setMinimumMatches(int i)
 	{
 		this.minimumMatches = i;

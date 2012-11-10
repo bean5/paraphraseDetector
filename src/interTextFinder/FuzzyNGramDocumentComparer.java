@@ -3,10 +3,10 @@ package interTextFinder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
+//import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+//import java.util.Set;
+//import java.util.TreeSet;
 
 import NGramSet.NGramSet;
 import NGramSet.NGramSetImplStemmed;
@@ -21,7 +21,8 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 	protected int		totalRightMatches	= 0;
 	private boolean	USESTOPWORDS		= true;
 
-	public HashSet<NGramSet> findCommonNGrams(String string1, String string2, int min, int max, boolean maximizePrimaryWindowSize)
+	public HashSet<NGramSet> findCommonNGrams(String string1, String string2, int min, int max,
+					boolean maximizePrimaryWindowSize)
 	{
 		HashSet<NGramSet> NGramsWithMatches = new HashSet<NGramSet>();
 
@@ -41,7 +42,7 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 		List<String> words1 = scanForWords(chars1);
 		List<String> words2 = scanForWords(chars2);
 
-		//when testing, restrist the length of documents to be small
+		// when testing, restrist the length of documents to be small
 		if (isTesting)
 		{
 			int maxSub = 1000;
@@ -56,31 +57,30 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 		NGramSetImpl.setMaxSize(max);
 
 		HashMap<String, List<NGramSet>> map = new HashMap<String, List<NGramSet>>();
-		
+
 		ArrayList<NGramSet> nGrams1;
-		if(maximizePrimaryWindowSize)
+		if (maximizePrimaryWindowSize)
 			nGrams1 = getAllNGramsOfSize(words1, words1.size(), null);
-		else
-			nGrams1 = getAllNGramsOfSize(words1, max, null);
-		
-		ArrayList<NGramSet> nGrams2 = getAllNGramsOfSize(words2, max, map);
+		else nGrams1 = getAllNGramsOfSize(words1, max, null);
+
+		// ArrayList<NGramSet> nGrams2 = 
+						getAllNGramsOfSize(words2, max, map);
 
 		// System.out.println("Words Left: " + nGrams1.size());
 		// System.out.println("Words Right: " + nGrams2.size());
 
 		findAllCommon(NGramsWithMatches, nGrams1, map);
+
+		organizeMatches(NGramsWithMatches);
+		mergeRepeats(NGramsWithMatches, min, max);
+		rankResults(NGramsWithMatches, min, max);
 		
-		// organizeMatches(NGramsWithMatches);
-
-		// mergeRepeats(NGramsWithMatches, min, max);
-		// rankResults(NGramsWithMatches, min, max);
-
 		return NGramsWithMatches;
 	}
 
 	private void organizeMatches(HashSet<NGramSet> nGramsWithMatches)
 	{
-		Set<NGramSet> bst = new TreeSet<NGramSet>(nGramsWithMatches);
+//		Set<NGramSet> bst = new TreeSet<NGramSet>(nGramsWithMatches);
 		// nGramsWithMatches = new LinkedList<NGramSet>(bst.toArray());
 	}
 
