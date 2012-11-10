@@ -20,10 +20,12 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 	protected boolean	matchCase			= true;
 	protected int		totalRightMatches	= 0;
 	private boolean	USESTOPWORDS		= true;
+	private List<Error> errors;
 
 	public HashSet<NGramSet> findCommonNGrams(String string1, String string2, int min, int max,
 					boolean maximizePrimaryWindowSize)
 	{
+		errors = new ArrayList<Error>();
 		HashSet<NGramSet> NGramsWithMatches = new HashSet<NGramSet>();
 
 		// ensure that min <= max
@@ -33,7 +35,7 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 			max = min;
 			min = temp;
 
-			System.out.println("Min greater than max; assuming the opposite parameterization.");
+			logError("Min greater than max; assuming the opposite parameterization");
 		}
 
 		char[] chars1 = string1.toCharArray();
@@ -42,29 +44,44 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 		List<String> words1 = scanForWords(chars1);
 		List<String> words2 = scanForWords(chars2);
 
-		// when testing, restrist the length of documents to be small
+		// when testing, restrict the length of documents to be small
 		if (isTesting)
 		{
 			int maxSub = 1000;
-			words1 = words1.subList(0, (maxSub > words1.size()) ? words1.size() : maxSub);
-			words2 = words2.subList(0, (maxSub > words2.size()) ? words2.size() : maxSub);
+			words1 = words1.subList(0, maxSizeOutOfRangeForSource(maxSub, words1) ? words1.size() : maxSub);
+			words2 = words2.subList(0, maxSizeOutOfRangeForSource(maxSub, words2) ? words2.size() : maxSub);
 		}
 
 		NGramSetImpl.setMatchCase(matchCase);
 		NGramSetImpl.setUseStopWords(USESTOPWORDS);
 		NGramSetImpl.setStrictness(STRICT);
 		NGramSetImpl.setMinSize(min);
-		NGramSetImpl.setMaxSize(max);
+		
+		int leftMax = (words1.size() <= max || maximizePrimaryWindowSize) ? words1.size() : max;
+		int rightMax = (words2.size() <= max) ? words2.size() - 1 : max;
+		NGramSetImpl.setMaxSize(rightMax);
 
 		HashMap<String, List<NGramSet>> map = new HashMap<String, List<NGramSet>>();
+		
+		if(rightMax < max)
+		{
+			logError("Window size greater than number of length of secondary text; decreasing secondary window size to: " + rightMax);
+		}
+		if(leftMax < max && maximizePrimaryWindowSize)
+		{
+			logError("Maximizing primary window");
+		}
+		else if(leftMax < max)
+		{
+			logError("Max out of range for primary source.  Scaling down to: " + leftMax);
+		}
+		
+		ArrayList<NGramSet> nGrams1 = null;
 
-		ArrayList<NGramSet> nGrams1;
-		if (maximizePrimaryWindowSize)
-			nGrams1 = getAllNGramsOfSize(words1, words1.size(), null);
-		else nGrams1 = getAllNGramsOfSize(words1, max, null);
-
-		// ArrayList<NGramSet> nGrams2 = 
-						getAllNGramsOfSize(words2, max, map);
+		nGrams1 = getAllNGramsOfSize(words1, leftMax, null);
+		
+		// ArrayList<NGramSet> nGrams2 =
+						getAllNGramsOfSize(words2, rightMax, map);
 
 		// System.out.println("Words Left: " + nGrams1.size());
 		// System.out.println("Words Right: " + nGrams2.size());
@@ -76,6 +93,28 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 		rankResults(NGramsWithMatches, min, max);
 		
 		return NGramsWithMatches;
+	}
+
+	private boolean maxSizeOutOfRangeForSource(int max, List<String> words2)
+	{
+		return max > words2.size();
+	}
+
+	private boolean maxSizeOutOfRangeForPrimarySource(int max, boolean maximizePrimaryWindowSize,
+					List<String> words1)
+	{
+		return maxSizeOutOfRangeForSource(max, words1) && !maximizePrimaryWindowSize;
+	}
+
+	private void logError(String message)
+	{
+		if(errors == null)
+			System.out.println("Error list does not exist; aborting log of error: " + message);
+
+		else {
+			errors.add(new Error(message));
+			System.out.println(message);
+		}
 	}
 
 	private void organizeMatches(HashSet<NGramSet> nGramsWithMatches)
@@ -325,5 +364,16 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 	{
 		// TODO Auto-generated method stub
 		return "";
+	}
+
+	public String errorsToString()
+	{
+		String errorString = "";
+		for(Error e : errors)
+		{
+			errorString += e.getMessage() + "\n";
+		}
+		
+		return errorString + "\n\n";
 	}
 }

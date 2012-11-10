@@ -198,7 +198,7 @@ public class IntertextualFinderGui
 
 	public class Clicked implements ActionListener
 	{
-		private JFileChooser	fc;
+//		private JFileChooser	fc;
 
 		public void actionPerformed(ActionEvent e)
 		{
@@ -211,7 +211,7 @@ public class IntertextualFinderGui
 				// if(true) return;
 
 				finder.setPrimaryPath(txtFieldFilePrimary.getText().trim());
-				finder.setSecondaryPath(txtFieldFilePrimary.getText().trim());
+				finder.setSecondaryPath(txtFieldFileSecondary.getText().trim());
 
 				finder.setMinimumMatches(Integer.parseInt(min.getText().trim()));
 				finder.setWindowSize(Integer.parseInt(max.getText().trim()));
