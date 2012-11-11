@@ -371,7 +371,7 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 		if(errors == null || errors.size() == 0)
 			return "";
 
-		String errorString = "Notes:\n";	
+		String errorString = "\nNotes:\n";	
 		for(Error e : errors)
 		{
 			errorString += e.getMessage() + "\n";
