@@ -68,7 +68,7 @@ public class InterTextualFinder
 		totalTime /= (1000 * 6);// convert to minutes
 		totalTime = totalTime / 10;
 
-		paramString = convertParametersToString(totalTime);
+		paramString = convertParametersToString(totalTime, comparer.errorsToString());
 	}
 
 	private void filterNGrams(int minimumSecondaryMatches)
@@ -106,7 +106,7 @@ public class InterTextualFinder
 		return stringToSaveToFile;
 	}
 
-	private String convertParametersToString(double totalTime)
+	private String convertParametersToString(double totalTime, String errorString)
 	{
 		String params = new String();
 
@@ -143,6 +143,9 @@ public class InterTextualFinder
 		params += "Require at least " + minimumSecondaryMatches + " secondary matches\n";
 
 		params += "Time to complete: " + totalTime + " minutes.\n";
+		
+		params += errorString;
+		
 		return params;
 	}
 
