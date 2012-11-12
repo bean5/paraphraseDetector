@@ -182,11 +182,7 @@ public class InterTextualFinder
 
 		params += "Require at least " + minimumSecondaryMatches + " secondary matches\n";
 
-<<<<<<< HEAD
-		params += "Time to complete: " + totalTime + " minutes.\n";
-=======
 		params += "Time to complete (search): " + totalTime + " minutes.\n";
->>>>>>> version8.1
 
 		params += errorString;
 
