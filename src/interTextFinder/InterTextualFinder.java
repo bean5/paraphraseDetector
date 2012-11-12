@@ -98,6 +98,7 @@ public class InterTextualFinder
 		if (printBestOnly) minscore = findBest(commonNGrams);
 
 		int matchCount = 0;
+
 		Iterator<NGramSet> itr = commonNGrams.iterator();
 
 		// for(NGramSet n : commonNGrams) {
@@ -114,8 +115,8 @@ public class InterTextualFinder
 			}
 		}
 
-		String stringToSaveToFile = paramsAsString + "Left Match Count: " + commonNGrams.size()
-						+ "\n" + "Right Match Count: " + rightCount + "\n\n" + str.toString();
+		String stringToSaveToFile = paramsAsString + "Left Match Count: " + leftCount + "\n"
+						+ "Right Match Count: " + rightCount + "\n\n" + str.toString();
 
 		return stringToSaveToFile;
 	}
@@ -164,7 +165,7 @@ public class InterTextualFinder
 
 		params += "Use Stop Words: ";
 		if (useStopWords)
-			params += "Yes " + comparer.toStringStopWordsToStringOfSize(10) + "\n";
+			params += "Yes " + comparer.toString() + "\n";
 		else params += "No" + "\n";
 
 		params += "Maximize Primary Window Size: ";
@@ -181,7 +182,11 @@ public class InterTextualFinder
 
 		params += "Require at least " + minimumSecondaryMatches + " secondary matches\n";
 
+<<<<<<< HEAD
 		params += "Time to complete: " + totalTime + " minutes.\n";
+=======
+		params += "Time to complete (search): " + totalTime + " minutes.\n";
+>>>>>>> version8.1
 
 		params += errorString;
 

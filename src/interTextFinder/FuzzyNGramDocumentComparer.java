@@ -100,12 +100,6 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 		return max > words2.size();
 	}
 
-	private boolean maxSizeOutOfRangeForPrimarySource(int max, boolean maximizePrimaryWindowSize,
-					List<String> words1)
-	{
-		return maxSizeOutOfRangeForSource(max, words1) && !maximizePrimaryWindowSize;
-	}
-
 	private void logError(String message)
 	{
 		if(errors == null)
@@ -358,12 +352,6 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 	public void setUseStopWords(boolean useStopWords)
 	{
 		USESTOPWORDS = useStopWords;
-	}
-
-	public String toStringStopWordsToStringOfSize(int i)
-	{
-		// TODO Auto-generated method stub
-		return "";
 	}
 
 	public String errorsToString()
