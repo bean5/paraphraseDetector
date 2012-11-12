@@ -84,6 +84,9 @@ public class IntertextualFinderGui
 	private JCheckBox							checkMaximizePrimaryWindow	= new JCheckBox(
 																										"Maximize Primary Window Size",
 																										false);
+	private JCheckBox							checkBestScoresOnly			= new JCheckBox(
+																										"Print Best Scores Only",
+																										false);
 
 	private JTextArea							textArea							= new JTextArea(20, 80);
 
@@ -137,6 +140,7 @@ public class IntertextualFinderGui
 		options.add(checkPorterStemmer);
 		options.add(checkUseStopWords);
 		options.add(checkMaximizePrimaryWindow);
+		options.add(checkBestScoresOnly);
 		// options.add(checkOptimize);
 
 		min.addActionListener(clicked);
@@ -224,6 +228,7 @@ public class IntertextualFinderGui
 				finder.setUsePorterStemmer(checkPorterStemmer.isSelected());
 				finder.setMaximizePrimaryWindow(checkMaximizePrimaryWindow.isSelected());
 				finder.setUseStopWords(checkUseStopWords.isSelected());
+				finder.setPrintBestScoresOnly(checkBestScoresOnly.isSelected());
 
 				finder.findIntertextQuotesFromFiles();
 

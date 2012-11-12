@@ -33,6 +33,7 @@ public class InterTextualFinder
 	boolean																	strictSearch					= true;
 	boolean																	usePorterStemmer				= true;
 	boolean																	useStopWords					= true;
+	boolean																	printBestOnly					= true;
 
 	public void findIntertextQuotesGivenParamsFromStrings(String primarySourceText,
 					String secondarySourceText)
@@ -85,25 +86,57 @@ public class InterTextualFinder
 		commonNGrams = filteredCommonNGrams;
 	}
 
-	public static String toString(String paramsAsString, HashSet<NGramSet> commonNGrams)
+	public static String toString(String paramsAsString, HashSet<NGramSet> commonNGrams,
+					boolean printBestOnly)
 	{
 		StringBuilder str = new StringBuilder();
 
-		int matchCount = 0;
+		int leftCount = 0;
+		int rightCount = 0;
+
+		int minscore = 1;
+		if (printBestOnly) minscore = findBest(commonNGrams);
+		
 		Iterator<NGramSet> itr = commonNGrams.iterator();
 
 		// for(NGramSet n : commonNGrams) {
 		while (itr.hasNext())
 		{
 			NGramSet nGram = itr.next();
-			str.append(nGram.toString());
-			str.append("\n\n");
-			matchCount += ((NGramSet) nGram).size();
+			// str.append(nGram.toString());
+			if (nGram.hasMatchesOfAtLeastScore(minscore))
+			{
+				str.append(nGram.toStringAtLeast(minscore));
+				str.append("\n\n");
+				leftCount++;
+				rightCount += nGram.countMatchesOfAtLeastScore(minscore);
+			}
 		}
 
-		String stringToSaveToFile = paramsAsString + "Left Match Count: " + commonNGrams.size()
-						+ "\n" + "Right Match Count: " + matchCount + "\n\n" + str.toString();
+		String stringToSaveToFile = paramsAsString + "Left Match Count: " + leftCount
+						+ "\n" + "Right Match Count: " + rightCount + "\n\n" + str.toString();
+
 		return stringToSaveToFile;
+	}
+
+	private static int findBest(HashSet<NGramSet> commonNGrams)
+	{
+		int best = 1;
+
+		Iterator<NGramSet> itr = commonNGrams.iterator();
+
+		// for(NGramSet n : commonNGrams) {
+		while (itr.hasNext())
+		{
+			NGramSet nGram = itr.next();
+			// str.append(nGram.toString());
+
+			int bestScoreOfNGram = nGram.findBestScore();
+
+			if (bestScoreOfNGram > best) best = bestScoreOfNGram;
+		}
+
+		return best;
 	}
 
 	private String convertParametersToString(double totalTime, String errorString)
@@ -130,7 +163,7 @@ public class InterTextualFinder
 
 		params += "Use Stop Words: ";
 		if (useStopWords)
-			params += "Yes " + comparer.toStringStopWordsToStringOfSize(10) + "\n";
+			params += "Yes " + comparer.toString() + "\n";
 		else params += "No" + "\n";
 
 		params += "Maximize Primary Window Size: ";
@@ -138,14 +171,19 @@ public class InterTextualFinder
 			params += "Yes" + "\n";
 		else params += "No" + "\n";
 
+		params += "Print Best Scores Only: ";
+		if (printBestOnly)
+			params += "Yes" + "\n";
+		else params += "No" + "\n";
+
 		params += "Fuzzy Search Parameters: " + minimumMatches + "/" + windowSize + "\n";
 
 		params += "Require at least " + minimumSecondaryMatches + " secondary matches\n";
 
-		params += "Time to complete: " + totalTime + " minutes.\n";
-		
+		params += "Time to complete (search): " + totalTime + " minutes.\n";
+
 		params += errorString;
-		
+
 		return params;
 	}
 
@@ -227,7 +265,7 @@ public class InterTextualFinder
 	{
 		if (paramString == null || commonNGrams == null)
 			return "No data. ";
-		else return toString(paramString, commonNGrams).replaceAll("\n",
+		else return toString(paramString, commonNGrams, printBestOnly).replaceAll("\n",
 						System.getProperty("line.separator"));
 	}
 
@@ -280,6 +318,11 @@ public class InterTextualFinder
 	public void setUseStopWords(boolean selected)
 	{
 		this.useStopWords = selected;
+	}
+
+	public void setPrintBestScoresOnly(boolean selected)
+	{
+		this.printBestOnly = selected;
 	}
 
 }

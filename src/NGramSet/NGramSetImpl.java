@@ -293,6 +293,20 @@ public class NGramSetImpl implements NGramSet
 		}
 	}
 
+	
+	private void appendRightToStringBuilderAtLesat(StringBuilder st, int minscore)
+	{
+		for (Entry<NGramSet, Integer> e : matches.entrySet())
+		{
+			if(e.getValue() < minscore)
+				continue;
+			NGramSetImpl s = (NGramSetImpl) e.getKey();
+
+			st.append("Secondary Match (" + e.getValue() + " words match):" + s.leftToString());
+			st.append("\n");
+		}
+	}
+
 	public String leftToString()
 	{
 		StringBuilder st = new StringBuilder();
@@ -395,5 +409,51 @@ public class NGramSetImpl implements NGramSet
 	public static void setStrictness(boolean STRICT)
 	{
 		useSrictMatching = STRICT;
+	}
+	
+	public int findBestScore()
+	{
+		int i = 0;
+		
+		for(Entry<NGramSet, Integer> e : matches.entrySet())
+		{
+			if(e.getValue() > i)
+				i = e.getValue();
+		}
+
+		return i;
+	}
+	
+	public boolean hasMatchesOfAtLeastScore(int minscore)
+	{
+		for(Entry<NGramSet, Integer> e : matches.entrySet())
+		{
+			if(e.getValue() >= minscore)
+				return true;
+		}
+		
+		return false;
+	}
+	
+	public String toStringAtLeast(int minscore)
+	{
+		StringBuilder st = new StringBuilder();
+		st.append("Primary Match: " + leftToString() + "\n");
+
+		appendRightToStringBuilderAtLesat(st, minscore);
+		
+		return st.toString();
+	}
+
+	public int countMatchesOfAtLeastScore(int minscore)
+	{
+		int count = 0;
+		for(Entry<NGramSet, Integer> e : matches.entrySet())
+		{
+			if(e.getValue() >= minscore)
+				count++;
+		}
+		
+		return count;
 	}
 }

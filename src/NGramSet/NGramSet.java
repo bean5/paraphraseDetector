@@ -32,4 +32,12 @@ public interface NGramSet {
 
 	int getPosition();
 //	int hashCode();
+
+	int findBestScore();
+
+	boolean hasMatchesOfAtLeastScore(int minscore);
+
+	String toStringAtLeast(int minscore);
+
+	int countMatchesOfAtLeastScore(int minscore);
 }
