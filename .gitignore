@@ -12,3 +12,9 @@ dist/*.jar
 *.odt
 dist/*
 intertext_results/*
+
+# Package Files #
+*.jar
+*.war
+*.ear
+*.zip

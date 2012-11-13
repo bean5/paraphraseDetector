@@ -1,3 +1,4 @@
+<<<<<<< HEAD
   
 
 
@@ -914,3 +915,9 @@ I think you should use an
   </body>
 </html>
 
+=======
+intertextLocator
+================
+
+Helps find common text between two documents; uses porter stemming, windowing, and allows for save to file.
+>>>>>>> 82b7069d890b91e2c181ba5c30d9ad7803e6d690
