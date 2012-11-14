@@ -232,7 +232,7 @@ public class GuiLooper
 				finder.setPrimaryPath(txtFieldFilePrimary.getText().trim());
 				finder.setSecondaryPath(txtFieldFileSecondary.getText().trim());
 
-				finder.setMinimumMatches(Integer.parseInt(min.getText().trim()));
+				finder.setMinimumScore(Integer.parseInt(min.getText().trim()));
 				// finder.setWindowSize(Integer.parseInt(max.getText().trim()));
 				// finder.setMinimumSecondaryMatches(Integer
 				// .parseInt(minSecondaryMatches.getText().trim()));

@@ -22,23 +22,13 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 	protected TreeMap<Double, Integer>	ordered_scores;
 	private List<Error>						errors;
 
-	public HashSet<NGramSet> findCommonNGrams(List<String> words1, List<String> words2, int min,
+	public HashSet<NGramSet> findCommonNGrams(List<String> words1, List<String> words2, double min_score,
 					int max, boolean maximizePrimaryWindowSize)
 	{
 		ordered_scores = new TreeMap<Double, Integer>();
 
 		errors = new ArrayList<Error>();
 		HashSet<NGramSet> NGramsWithMatches = new HashSet<NGramSet>();
-
-		// ensure that min <= max
-		if (min > max)
-		{
-			int temp = max;
-			max = min;
-			min = temp;
-
-			logError("Min greater than max; assuming the opposite parameterization");
-		}
 
 		// when testing, restrict the length of documents to be small
 		if (isTesting)
@@ -53,7 +43,6 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 		NGramSetImpl.setMatchCase(matchCase);
 		NGramSetImpl.setUseStopWords(USESTOPWORDS);
 		NGramSetImpl.setStrictness(STRICT);
-//		NGramSetImpl.setMinSize(min);
 
 		int leftMax = (words1.size() <= max || maximizePrimaryWindowSize) ? words1.size() : max;
 		int rightMax = (words2.size() <= max) ? words2.size() - 1 : max;
@@ -76,22 +65,10 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 
 		ArrayList<NGramSet> nGrams1 = null;
 
-		if(leftMax != max)
-		{
-			int effectiveMin = (int) Math.ceil(((double) min/(double) max) * leftMax);
-			nGrams1 = getAllNGramsOfSize(words1, effectiveMin, leftMax, null);
-		}
-		else
-			nGrams1 = getAllNGramsOfSize(words1, min, leftMax, null);
-		
-		if(rightMax != max)
-		{
-			int effectiveMin = (int) Math.ceil(((double) min/(double) max) * rightMax);
-		// ArrayList<NGramSet> nGrams2 =
-			getAllNGramsOfSize(words2, effectiveMin, rightMax, map);
-		}
-		else
-			getAllNGramsOfSize(words2, min, rightMax, map);
+
+		nGrams1 = getAllNGramsOfSize(words1, min_score, leftMax, null);
+
+		getAllNGramsOfSize(words2, min_score, rightMax, map);
 			
 		findAllCommon(NGramsWithMatches, nGrams1, map);
 
@@ -151,7 +128,7 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 		}
 	}
 
-	private ArrayList<NGramSet> getAllNGramsOfSize(List<String> words, int min_count,
+	private ArrayList<NGramSet> getAllNGramsOfSize(List<String> words, double min_score,
 					int window_size, HashMap<String, List<NGramSet>> map)
 	{
 		String processedWord = null;
@@ -161,7 +138,7 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 		if (usePorterStemmer)
 		{
 			NGramSetImplStemmed current = new NGramSetImplStemmed(window_size);
-			current.setMinSize(min_count);
+			current.setMinScore(min_score);
 			current.setMaxSize(window_size);
 			current.setDocument(words);
 

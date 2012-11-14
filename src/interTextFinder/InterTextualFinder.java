@@ -20,7 +20,7 @@ public class InterTextualFinder
 
 	protected String															primarySourcePath;
 	protected String															secondarySourcePath;
-	private int																	minimumMatches					= 1;
+	private double																minimum_score					= 0.0;
 	private int																	minimumSecondaryMatches		= 1;
 	private int																	windowSize						= 1;
 
@@ -68,13 +68,13 @@ public class InterTextualFinder
 	public void findIntertextQuotesGivenParamsFromTokenizedLists(List<String> words1,
 					List<String> words2)
 	{
-		if (maximizePrimaryWindowSize) minimumMatches = 1;
+//		if (maximizePrimaryWindowSize) minimum_score = 1;
 		comparer.setMatchCase(matchCase);
 		comparer.setStrict(strictSearch);
 		comparer.setPorterStemmerUsage(usePorterStemmer);
 		comparer.setUseStopWords(useStopWords);
 
-		commonNGrams = comparer.findCommonNGrams(words1, words2, minimumMatches, windowSize,
+		commonNGrams = comparer.findCommonNGrams(words1, words2, minimum_score, windowSize,
 						maximizePrimaryWindowSize);
 
 		filterNGrams(minimumSecondaryMatches);
@@ -213,7 +213,7 @@ public class InterTextualFinder
 
 		params += checkBoxParamsAsString();
 
-		params += "Fuzzy Search Parameters: " + minimumMatches + "/" + windowSize + "\n";
+		params += "Fuzzy Search Parameters: " + minimum_score + "/" + windowSize + "\n";
 
 		params += "Require at least " + minimumSecondaryMatches + " secondary matches\n";
 
@@ -306,9 +306,9 @@ public class InterTextualFinder
 		this.secondarySourcePath = path;
 	}
 
-	public void setMinimumMatches(int i)
+	public void setMinimumScore(double i)
 	{
-		this.minimumMatches = i;
+		this.minimum_score = i;
 	}
 
 	public void setWindowSize(int i)

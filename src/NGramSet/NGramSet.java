@@ -18,8 +18,10 @@ public interface NGramSet {
 	int getCountOfWord(String key);
 //	public List<String> getWordList();
 	public List<String> getModifiedWordList();
+//	public static double setMinScore();
 	
-	public int getMinSize();
+	public void setMinScore(double d);
+	public double getMinScore();
 	public int getMaxSize();
 	
 	int size();
