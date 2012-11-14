@@ -27,7 +27,7 @@ public class InterTextualFinderLooper extends InterTextualFinder
 
 		double best = 0.0D;
 		final int max = (words1.size() > words2.size()) ? words1.size() : words2.size();
-		for (int i = max; i > 1; i--)
+		for (int i = 60; i > 1; i--)
 		{
 			System.out.println("Attempting size: " + i);
 			// assert(super.minimum)
@@ -37,11 +37,13 @@ public class InterTextualFinderLooper extends InterTextualFinder
 				super.setMinimumMatches((int) Math.ceil(best * i));
 			
 			super.setWindowSize(i);
+			
+			System.out.println("min: " + (int) Math.ceil(best * i) + " max: " + i);
 			super.findIntertextQuotesGivenParamsFromTokenizedLists(words1, words2);
 			
 			super.filterOutNonOptimalMatches();
 			
-			if(getBestRightMatches().size() < 10)
+//			if(getBestRightMatches().size() < 10)
 				results.put(i, super.commonNGrams);
 
 			double score = findBestScore();

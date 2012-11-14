@@ -104,7 +104,7 @@ public class NGramSetImpl implements NGramSet
 	{
 		assert (minSize != 0);
 		assert (maxSize != 0);
-		assert (minSize <= maxSize);
+//		assert (minSize <= maxSize);
 
 		// System.out.print("\nSearching for matches for:\n\n" + toString());
 
