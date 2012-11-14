@@ -1,11 +1,12 @@
 package interTextFinder;
 
 import java.util.HashSet;
+import java.util.List;
 
 import NGramSet.NGramSet;
 
 public interface DocumentCommonalityFinder {
-	public HashSet<NGramSet> findCommonNGrams(String string1, String string2, int min, int max, boolean maximizePrimaryWindowSize);
+	public HashSet<NGramSet> findCommonNGrams(List<String> words1, List<String> words2, int min, int max, boolean maximizePrimaryWindowSize);
 	
 	public String toString();
 	public int hashCode();

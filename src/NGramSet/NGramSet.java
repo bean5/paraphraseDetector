@@ -45,4 +45,8 @@ public interface NGramSet {
 	public TreeMap<Double, Integer> getScores();
 
 	double getScore();
+
+	void filterMatchesWithScoresLowerThan(double bestScore);
+	
+	public int getTotalCount();
 }

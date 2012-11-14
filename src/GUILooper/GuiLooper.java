@@ -1,6 +1,7 @@
-package intertextGUI;
+package GUILooper;
 
 import interTextFinder.InterTextualFinder;
+import interTextFinder.InterTextualFinderLooper;
 
 import javax.swing.*;
 //import javax.swing.event.*;
@@ -11,20 +12,19 @@ import java.io.IOException;
 /*
  * 
  */
-public class IntertextualFinderGui
+public class GuiLooper
 {
-	protected static InterTextualFinder	finder							= new InterTextualFinder();
+	protected static InterTextualFinder	finder							= new InterTextualFinderLooper();
 
 	// Initialize all swing objects.
-	private JFrame								f									= new JFrame(
-																										"Rephrase Locator Beta");														// create
-																																																// Frame
-	private JPanel								pnlNorth							= new JPanel();																					// North
-																																																// quadrant
-	private JPanel								pnlCenter						= new JPanel();																					// Center
-																																																// quadrant
-	private JPanel								pnlSouth							= new JPanel();																					// South
-																																																// quadrant
+	private JFrame								f									= new JFrame("GUI Looper");			// create
+																																		// Frame
+	private JPanel								pnlNorth							= new JPanel();							// North
+																																		// quadrant
+	private JPanel								pnlCenter						= new JPanel();							// Center
+																																		// quadrant
+	private JPanel								pnlSouth							= new JPanel();							// South
+																																		// quadrant
 
 	// Buttons some there is something to put in the panels
 	private JButton							btnRun							= new JButton("Run");
@@ -32,14 +32,14 @@ public class IntertextualFinderGui
 	static String								corporaBaseDir					= "corpora/";
 	static String								resultsBaseDir					= "intertext_results/";
 
-	 private JTextField txtFieldFilePrimary = new JTextField(corporaBaseDir
-	 + "");
-	 private JTextField txtFieldFileSecondary = new JTextField(corporaBaseDir
-	 + "");
-//	private JTextField						txtFieldFilePrimary			= new JTextField(corporaBaseDir
-//																										+ "test.txt");
-//	private JTextField						txtFieldFileSecondary		= new JTextField(corporaBaseDir
-//																										+ "test2.txt");
+	// private JTextField txtFieldFilePrimary = new JTextField(corporaBaseDir
+	// + "");
+	// private JTextField txtFieldFileSecondary = new JTextField(corporaBaseDir
+	// + "");
+	private JTextField						txtFieldFilePrimary			= new JTextField(corporaBaseDir
+																										+ "gen1.txt");
+	private JTextField						txtFieldFileSecondary		= new JTextField(corporaBaseDir
+																										+ "19-324a.txt");
 
 	private JLabel								lblFilePrimary					= new JLabel("Primary File");
 	private JLabel								lblFileSecondary				= new JLabel("Secondary File");
@@ -49,29 +49,29 @@ public class IntertextualFinderGui
 	private JLabel								lblFileOut						= new JLabel("Output File");
 
 	// Menu
-	private JMenuBar							mb									= new JMenuBar();																				// Menubar
-	private JMenu								mnuFile							= new JMenu("File");																			// File
-																																																// Entry
-																																																// on
-																																																// Menu
-																																																// bar
+	private JMenuBar							mb									= new JMenuBar();						// Menubar
+	private JMenu								mnuFile							= new JMenu("File");					// File
+																																		// Entry
+																																		// on
+																																		// Menu
+																																		// bar
 	private JMenuItem							mnuItemSave						= new JMenuItem("Save");
 
-	private JMenu								mnuHelp							= new JMenu("Help");																			// Help
-																																																// Menu
-																																																// entry
-	private JMenuItem							mnuItemAbout					= new JMenuItem("About");																		// About
-																																																// Entry
+	private JMenu								mnuHelp							= new JMenu("Help");					// Help
+																																		// Menu
+																																		// entry
+	private JMenuItem							mnuItemAbout					= new JMenuItem("About");				// About
+																																		// Entry
 
-	private JMenuItem							mnuItemQuit						= new JMenuItem("Quit");																		// Quit
-																																																// sub
-																																																// item
+	private JMenuItem							mnuItemQuit						= new JMenuItem("Quit");				// Quit
+																																		// sub
+																																		// item
 
 	private JTextField						min								= new JTextField("1");
-	private JTextField						max								= new JTextField("500");
-
-	private JLabel								lblSecondaryMatchMin			= new JLabel(
-																										"Filter out primary matches with less than this many matches: ");
+	// private JTextField max = new JTextField("500");
+	//
+	// private JLabel lblSecondaryMatchMin = new JLabel(
+	// "Filter out primary matches with less than this many matches: ");
 	private JTextField						minSecondaryMatches			= new JTextField("1");
 
 	private JCheckBox							checkMatchCase					= new JCheckBox("Match Case",
@@ -93,7 +93,7 @@ public class IntertextualFinderGui
 	private JTextArea							textArea							= new JTextArea(20, 80);
 
 	/** Constructor for the GUI */
-	public IntertextualFinderGui()
+	public GuiLooper()
 	{
 		// checkStrict.setEnabled(false);
 		// checkPorterStemmer.setEnabled(false);
@@ -142,27 +142,27 @@ public class IntertextualFinderGui
 		options.add(checkPorterStemmer);
 		options.add(checkUseStopWords);
 		options.add(checkMaximizePrimaryWindow);
-		options.add(checkBestScoresOnly);
+		// options.add(checkBestScoresOnly);
 
-		JPanel secondOptions = new JPanel();
-		minSecondaryMatches.setColumns(3);
-		secondOptions.add(lblSecondaryMatchMin);
-		secondOptions.add(minSecondaryMatches);
-
-		min.addActionListener(clicked);
-		min.setColumns(3);
-		secondOptions.add(new JLabel("Fuzzy Search Parameters"));
-		secondOptions.add(min);
-		secondOptions.add(new JLabel("/"));
-
-		max.addActionListener(clicked);
-		max.setColumns(3);
-		max.addActionListener(clicked);
-		secondOptions.add(max);
-
+		// JPanel secondOptions = new JPanel();
+		// minSecondaryMatches.setColumns(3);
+		// secondOptions.add(lblSecondaryMatchMin);
+		// secondOptions.add(minSecondaryMatches);
+		//
+		// min.addActionListener(clicked);
+		// min.setColumns(3);
+		// secondOptions.add(new JLabel("Fuzzy Search Parameters"));
+		// secondOptions.add(min);
+		// secondOptions.add(new JLabel("/"));
+		//
+		// max.addActionListener(clicked);
+		// max.setColumns(3);
+		// max.addActionListener(clicked);
+		// secondOptions.add(max);
+		//
 		secondMainBox.add(mainBox, BorderLayout.NORTH);
 		secondMainBox.add(options, BorderLayout.CENTER);
-		secondMainBox.add(secondOptions, BorderLayout.SOUTH);
+		// secondMainBox.add(secondOptions, BorderLayout.SOUTH);
 
 		// Setup Main Frame
 		f.getContentPane().setLayout(new BorderLayout());
@@ -233,9 +233,9 @@ public class IntertextualFinderGui
 				finder.setSecondaryPath(txtFieldFileSecondary.getText().trim());
 
 				finder.setMinimumMatches(Integer.parseInt(min.getText().trim()));
-				finder.setWindowSize(Integer.parseInt(max.getText().trim()));
-				finder.setMinimumSecondaryMatches(Integer
-								.parseInt(minSecondaryMatches.getText().trim()));
+				// finder.setWindowSize(Integer.parseInt(max.getText().trim()));
+				// finder.setMinimumSecondaryMatches(Integer
+				// .parseInt(minSecondaryMatches.getText().trim()));
 
 				finder.setMatchCase(checkMatchCase.isSelected());
 				finder.setStrictness(checkStrict.isSelected());
@@ -327,7 +327,7 @@ public class IntertextualFinderGui
 
 	public static void main(String[] args)
 	{
-		IntertextualFinderGui gui = new IntertextualFinderGui();
+		GuiLooper gui = new GuiLooper();
 		gui.launchFrame();
 	}
 }

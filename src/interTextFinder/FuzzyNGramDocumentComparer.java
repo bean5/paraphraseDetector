@@ -22,7 +22,7 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 	protected TreeMap<Double, Integer>	ordered_scores;
 	private List<Error>						errors;
 
-	public HashSet<NGramSet> findCommonNGrams(String string1, String string2, int min, int max,
+	public HashSet<NGramSet> findCommonNGrams(List<String> words1, List<String> words2, int min, int max,
 					boolean maximizePrimaryWindowSize)
 	{
 		ordered_scores = new TreeMap<Double, Integer>();
@@ -39,12 +39,6 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 
 			logError("Min greater than max; assuming the opposite parameterization");
 		}
-
-		char[] chars1 = string1.toCharArray();
-		char[] chars2 = string2.toCharArray();
-
-		List<String> words1 = scanForWords(chars1);
-		List<String> words2 = scanForWords(chars2);
 
 		// when testing, restrict the length of documents to be small
 		if (isTesting)
@@ -276,63 +270,6 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 		// if(map != null) System.out.println("Map size: " +
 		// map.entrySet().size());
 		return sets;
-	}
-
-	private List<String> scanForWords(char[] chars)
-	{
-		List<String> words = new ArrayList<String>(chars.length / 8);// assume
-																							// that the
-																							// average
-																							// word
-																							// length
-																							// is 7
-		StringBuilder str = new StringBuilder();
-		str.setLength(30);
-
-		int total = 0;
-		int length = 0;
-		int max = chars.length;
-
-		// for(int i = 0; i < max; i++) {
-		// char currChar = chars[i];
-		// //System.out.print(currChar);
-		// }
-
-		for (int i = 0; i < max; i++)
-		{
-			char currChar = chars[i];
-			// TODO fix this because it is wrong.
-			char nextChar = chars[i];
-
-			if (characterEvaluater.isAlphaOrDashFollowedByAlpha(currChar, nextChar))
-			{
-				str.setCharAt(length, currChar);
-				// System.out.print(currChar);
-				length++;
-			}
-			else if (length > 0)
-			{
-				// if(matchCase || true) {
-				words.add(str.substring(0, length));
-				// } else {
-				// //System.out.println("Using lower case");
-				// String newString = new String(str.substring(0,
-				// length).toLowerCase());
-				// words.add(newString);
-				// //System.out.print(newString + ' ');
-				// }
-				total += length;
-				length = 0;
-			}
-		}
-
-		System.out.println("Total length: " + total);
-//		System.out.println("Predicted length: " + chars.length / 8);
-		System.out.println("Average length: " + total / words.size());
-
-		assert (chars.length == 0 || words.size() > 0);
-
-		return words;
 	}
 
 	public void setStrict(boolean strictness)

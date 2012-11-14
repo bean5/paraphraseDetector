@@ -3,18 +3,15 @@ package NGramSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
-import javax.xml.ws.handler.MessageContext.Scope;
-
 public class NGramSetImpl implements NGramSet
 {
 	protected static int							minSize;
-	protected int									maxSize;
+	public int										maxSize;
 	protected static boolean					matchCase			= false;
 	protected static boolean					useStopWords		= true;
 	protected static boolean					useSrictMatching	= true;
@@ -210,6 +207,19 @@ public class NGramSetImpl implements NGramSet
 		return c;
 	}
 
+	public void filterMatchesWithScoresLowerThan(double bestScore)
+	{
+		HashMap<NGramSet, Integer> filteredMap = new HashMap<NGramSet, Integer>();
+		for (Entry<NGramSet, Integer> e : matches.entrySet())
+		{
+			if (e.getKey().getScore() >= bestScore)
+				filteredMap.put(e.getKey(), e.getValue());
+//			if (e.getKey().getScore() < bestScore) 
+//				matches.remove(e.getValue());
+		}
+		matches = filteredMap;
+	}
+
 	protected void incrementPosition()
 	{
 		assert (position < document.size());
@@ -292,7 +302,7 @@ public class NGramSetImpl implements NGramSet
 	public String toString()
 	{
 		StringBuilder st = new StringBuilder();
-		st.append("Primary Match: " + leftToString() + "\n");
+		st.append("Primary Match (size: " + maxSize + "): " + leftToString() + "\n");
 
 		appendRightToStringBuilder(st);
 
@@ -305,7 +315,7 @@ public class NGramSetImpl implements NGramSet
 		{
 			NGramSetImpl s = (NGramSetImpl) e.getKey();
 
-			st.append("Secondary Match (" + e.getValue() + " words match):" + s.leftToString());
+			st.append("Secondary Match [" + e.getKey().getTotalCount() + " words match of " + s.getMaxSize() + " (" + e.getKey().getScore() + ")]:" + s.leftToString());
 			st.append("\n");
 		}
 	}
@@ -431,10 +441,7 @@ public class NGramSetImpl implements NGramSet
 	{
 		if (ordered_scores.size() == 0) return 0D;
 
-		Double key = ordered_scores.lastKey();
-
-//		System.out.println("Here" + key);
-		return key;
+		return ordered_scores.lastKey();
 	}
 
 	public boolean hasMatchesOfAtLeastScore(double minscore)
@@ -470,6 +477,11 @@ public class NGramSetImpl implements NGramSet
 
 	public double getScore()
 	{
-		return (double)totalCount / (double)maxSize;
+		return (double) totalCount / (double) (maxSize);
+	}
+	
+	public int getTotalCount()
+	{
+		return totalCount;
 	}
 }

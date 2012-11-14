@@ -1,56 +1,35 @@
 package interTextFinder;
 
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Scanner;
+
+import fileio.DocumentScanner;
 
 import NGramSet.NGramSet;
 import NGramSet.NGramSetImpl;
 
 public class InterTextualFinder
 {
-	private String															paramString;
-	private static FuzzyNGramDocumentComparer<NGramSetImpl>	comparer;
-	private static HashSet<NGramSet>									commonNGrams;
+	protected String															paramString;
+	protected static FuzzyNGramDocumentComparer<NGramSetImpl>	comparer							= new FuzzyNGramDocumentComparer<NGramSetImpl>();
+	protected HashSet<NGramSet>											commonNGrams;
 
-	private String															primarySourcePath;
-	private String															secondarySourcePath;
-	private int																minimumMatches					= 1;
-	private int																minimumSecondaryMatches		= 1;
-	private int																windowSize						= 1;
+	protected String															primarySourcePath;
+	protected String															secondarySourcePath;
+	private int																	minimumMatches					= 1;
+	private int																	minimumSecondaryMatches		= 1;
+	private int																	windowSize						= 1;
 
-	boolean																	matchCase						= false;
-	boolean																	maximizePrimaryWindowSize	= false;
-	boolean																	strictSearch					= true;
-	boolean																	usePorterStemmer				= true;
-	boolean																	useStopWords					= true;
-	boolean																	printBestOnly					= true;
-
-	/*
-	 * sets parameters, initiates search for common words
-	 */
-	public void findIntertextQuotesGivenParamsFromStrings(String primarySourceText,
-					String secondarySourceText)
-	{
-		// if(maximizePrimaryWindowSize) minimumMatches = 1;
-
-		comparer = new FuzzyNGramDocumentComparer<NGramSetImpl>();
-		comparer.setMatchCase(matchCase);
-		comparer.setStrict(strictSearch);
-		comparer.setPorterStemmerUsage(usePorterStemmer);
-		comparer.setUseStopWords(useStopWords);
-		commonNGrams = comparer.findCommonNGrams(primarySourceText, secondarySourceText,
-						minimumMatches, windowSize, maximizePrimaryWindowSize);
-		
-		filterNGrams(minimumSecondaryMatches);
-	}
+	private boolean															matchCase						= false;
+	private boolean															maximizePrimaryWindowSize	= false;
+	private boolean															strictSearch					= true;
+	private boolean															usePorterStemmer				= true;
+	private boolean															useStopWords					= true;
+	private boolean															printBestOnly					= true;
 
 	/*
 	 * Starts a timer, reads in files, and calls string version of function
@@ -59,14 +38,10 @@ public class InterTextualFinder
 	{
 		double start = System.currentTimeMillis();
 
-		File[] fileList =
-		{ new File(primarySourcePath), new File(secondarySourcePath) };
+		List<String> words1 = DocumentScanner.tokenizeFromFile(primarySourcePath);
+		List<String> words2 = DocumentScanner.tokenizeFromFile(secondarySourcePath);
 
-		List<String> files = new ArrayList<String>(2);
-
-		readInFiles(fileList, files);
-
-		findIntertextQuotesGivenParamsFromStrings(files.get(0), files.get(1));
+		findIntertextQuotesGivenParamsFromTokenizedLists(words1, words2);
 
 		double end = System.currentTimeMillis();
 		double totalTime = end - start;
@@ -74,6 +49,35 @@ public class InterTextualFinder
 		totalTime = totalTime / 10;
 
 		paramString = convertParametersToString(totalTime, comparer.errorsToString());
+	}
+
+	//
+	// /*
+	// * sets parameters, initiates search for common words
+	// */
+	// private void findIntertextQuotesGivenParamsFromStrings(String
+	// primarySourceText,
+	// String secondarySourceText)
+	// {
+	// List<String> words1 = DocumentScanner.tokenizeString(primarySourceText);
+	// List<String> words2 = DocumentScanner.tokenizeString(secondarySourceText);
+	//
+	// findIntertextQuotesGivenParamsFromTokenizedLists(words1, words2);
+	// }
+
+	public void findIntertextQuotesGivenParamsFromTokenizedLists(List<String> words1,
+					List<String> words2)
+	{
+		if (maximizePrimaryWindowSize) minimumMatches = 1;
+		comparer.setMatchCase(matchCase);
+		comparer.setStrict(strictSearch);
+		comparer.setPorterStemmerUsage(usePorterStemmer);
+		comparer.setUseStopWords(useStopWords);
+
+		commonNGrams = comparer.findCommonNGrams(words1, words2, minimumMatches, windowSize,
+						maximizePrimaryWindowSize);
+
+		filterNGrams(minimumSecondaryMatches);
 	}
 
 	/*
@@ -106,7 +110,7 @@ public class InterTextualFinder
 
 		double minscore = 0D;
 		if (printBestOnly) minscore = findBestScore(commonNGrams);
-//		System.out.println("Here" + minscore);
+		// System.out.println("Here" + minscore);
 
 		Iterator<NGramSet> itr = commonNGrams.iterator();
 
@@ -129,9 +133,15 @@ public class InterTextualFinder
 
 		return stringToSaveToFile;
 	}
+	
+	protected double findBestScore()
+	{
+		return findBestScore(commonNGrams);
+	}
 
 	/*
 	 * @param in commonNGrams nGrams alignments
+	 * 
 	 * @param out double best score
 	 */
 	private static double findBestScore(HashSet<NGramSet> commonNGrams)
@@ -152,16 +162,82 @@ public class InterTextualFinder
 		return best;
 	}
 
+	protected HashSet<NGramSet> getBestRightMatches()
+	{
+		double bestScore = findBestScore(commonNGrams);
+		HashSet<NGramSet> best = new HashSet<NGramSet>();
+
+		Iterator<NGramSet> itr = commonNGrams.iterator();
+
+		while (itr.hasNext())
+		{
+			NGramSet nGram = itr.next();
+
+			double bestScoreOfNGram = nGram.findBestScore();
+
+			if (bestScoreOfNGram >= bestScore) best.add(nGram);
+		}
+
+		return best;
+	}
+
+	protected void filterOutNonOptimalMatches()
+	{
+		double bestScore = findBestScore(commonNGrams);
+
+		filterOutMatchesOfLessThanScore(bestScore);
+	}
+
+	private void filterOutMatchesOfLessThanScore(double bestScore)
+	{
+		HashSet<NGramSet> filteredSet = new HashSet<NGramSet>();
+		for(NGramSet nGram : commonNGrams)
+		{
+			nGram.filterMatchesWithScoresLowerThan(bestScore);
+			if (nGram.size() != 0)
+			{
+				filteredSet.add(nGram);
+			}
+		}
+		commonNGrams = filteredSet;
+	}
+
 	/*
 	 * Converts parameters and total time to string
 	 */
-	private String convertParametersToString(double totalTime, String errorString)
+	protected String convertParametersToString(double totalTime, String errorString)
 	{
 		String params = new String();
 
-		params += "Primary Source: " + primarySourcePath + "\n";
-		params += "Secondary Source: " + secondarySourcePath + "\n";
+		params += sourcePathsAsString();
 
+		params += checkBoxParamsAsString();
+
+		params += "Fuzzy Search Parameters: " + minimumMatches + "/" + windowSize + "\n";
+
+		params += "Require at least " + minimumSecondaryMatches + " secondary matches\n";
+
+		params = timeToCompleteAsString(totalTime);
+
+		params += errorString;
+
+		return params;
+	}
+
+	protected String timeToCompleteAsString(double totalTime)
+	{
+		return "Time to complete (search): " + totalTime + " minutes.\n";
+	}
+
+	protected String sourcePathsAsString()
+	{
+		return "Primary Source: " + primarySourcePath + "\n" + "Secondary Source: "
+						+ secondarySourcePath + "\n";
+	}
+
+	protected String checkBoxParamsAsString()
+	{
+		String params = "";
 		params += "Match Case: ";
 		if (matchCase)
 			params += "Yes" + "\n";
@@ -191,77 +267,7 @@ public class InterTextualFinder
 		if (printBestOnly)
 			params += "Yes" + "\n";
 		else params += "No" + "\n";
-
-		params += "Fuzzy Search Parameters: " + minimumMatches + "/" + windowSize + "\n";
-
-		params += "Require at least " + minimumSecondaryMatches + " secondary matches\n";
-
-		params += "Time to complete (search): " + totalTime + " minutes.\n";
-
-		params += errorString;
-
 		return params;
-	}
-
-	/*
-	 * Reads list of files into a list of strings
-	 */
-	private static void readInFiles(File[] fileList, List<String> files) throws IOException
-	{
-		// TODO
-		System.out.println("Consider making everything compatible with unicode.\n");
-		for (File f : fileList)
-		{
-			FileInputStream fis = null;
-			// InputStreamReader in = null;
-
-//			try
-//			{
-				fis = new FileInputStream(f);
-				if (fis != null)
-				{
-					// in = new InputStreamReader(fis, "UTF-8");
-					String newLine = read(f.toString(), "UTF-8");
-					// String newLine = read(f.toString(), "unicode");
-
-					files.add(newLine);
-				}
-				fis.close();
-//			}
-//			catch (UnsupportedEncodingException e)
-//			{
-//				e.printStackTrace();
-//			}
-//			catch (FileNotFoundException e1)
-//			{
-//				e1.printStackTrace();
-//			}
-//			catch (IOException e)
-//			{
-//				e.printStackTrace();
-//			}
-		}
-	}
-
-	/*
-	 * 
-	 */
-	private static String read(String filename, String fEncoding) throws IOException
-	{
-		File fFilename = new File(filename);
-
-		StringBuilder text = new StringBuilder();
-		String NL = System.getProperty("line.separator");
-		Scanner scanner = new Scanner(new FileInputStream(fFilename), fEncoding);
-		
-		while (scanner.hasNextLine())
-		{
-			text.append(scanner.nextLine() + NL);
-		}
-		
-		scanner.close();
-		
-		return text.toString();
 	}
 
 	public void saveTo(String outFilePath)
@@ -344,5 +350,4 @@ public class InterTextualFinder
 	{
 		this.printBestOnly = selected;
 	}
-
 }
