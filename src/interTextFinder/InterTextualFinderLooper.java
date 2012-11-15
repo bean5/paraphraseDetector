@@ -25,11 +25,11 @@ public class InterTextualFinderLooper extends InterTextualFinder
 		List<String> words1 = DocumentScanner.tokenizeFromFile(primarySourcePath);
 		List<String> words2 = DocumentScanner.tokenizeFromFile(secondarySourcePath);
 
-		double min_score = 1.0D;
+		double min_score = 0.3D;
 		final int max = (words1.size() > words2.size()) ? words1.size() : words2.size();
 		for (int i = max; i > 1; i--)
 		{
-			System.out.println("Attempting size: " + i);
+			System.out.println("\n\nAttempting size: " + i);
 
 			super.setMinimumScore(min_score);
 
@@ -44,8 +44,8 @@ public class InterTextualFinderLooper extends InterTextualFinder
 
 			min_score = findBestScore();
 
-			if (min_score == 1.0D) break;
 			System.out.println("Number of matches: " + getBestRightMatches().size());
+			if (min_score == 1.0D) break;
 		}
 
 		String all = "";
@@ -58,7 +58,6 @@ public class InterTextualFinderLooper extends InterTextualFinder
 
 			all += "\nNumber of primary matches: " + e.getValue().size() + "\n";
 
-			// all += e.getValue().toString();
 			for (NGramSet set : e.getValue())
 			{
 				all += set.toString() + "\n\n";

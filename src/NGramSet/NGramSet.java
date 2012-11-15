@@ -16,13 +16,12 @@ public interface NGramSet {
 	void setDocument(List<String> words);
 	
 	int getCountOfWord(String key);
-//	public List<String> getWordList();
+
 	public List<String> getModifiedWordList();
-//	public static double setMinScore();
 	
 	public void setMinScore(double d);
-	public double getMinScore();
-	public int getMaxSize();
+	public double getMinRequiredScore();
+	public int get_window_size();
 	
 	int size();
 	
@@ -45,13 +44,13 @@ public interface NGramSet {
 
 	public TreeMap<Double, Integer> getScores();
 
-	double getScore();
+	double getScore(NGramSet set);
 
 	void filterMatchesWithScoresLowerThan(double bestScore);
 	
 	public int getTotalCount();
 
-	void computeScore();
+	void computeScore(int integer, NGramSet set);
 
 	double lowestScore();
 }

@@ -10,24 +10,25 @@ import java.util.TreeMap;
 
 public class NGramSetImpl implements NGramSet
 {
-	protected double							minScore				= 0.0D;
-	public int									maxSize;
-	protected static boolean				matchCase			= false;
-	protected static boolean				useStopWords		= true;
-	protected static boolean				useSrictMatching	= true;
+	protected double							min_required_score	= 0.0D;
+	public int									window_size;
+	protected static boolean				matchCase				= false;
+	protected static boolean				useStopWords			= true;
+	protected static boolean				useSrictMatching		= true;
 
-	protected int								position				= 0;
-	protected int								totalCount			= 0;
+	protected int								position					= 0;
+	protected int								totalCount				= 0;
 
 	protected List<String>					document;
 
 	protected List<String>					words;
 	protected List<String>					modifiedWords;
 
-	protected HashMap<String, Integer>	wordCounts;
+	protected HashMap<String, Integer>	word_counts;
 	protected HashMap<NGramSet, Double>	matches;
 	protected TreeMap<Double, Integer>	ordered_scores;
-	private double								score					= 0.0D;
+	private double								score						= 0.0D;
+	protected HashMap<NGramSet, Double>	scores_for_primary;
 
 	public NGramSetImpl(int size)
 	{
@@ -36,7 +37,7 @@ public class NGramSetImpl implements NGramSet
 
 	public NGramSetImpl(NGramSet other)
 	{
-		initialize(other.getMaxSize());
+		initialize(other.get_window_size());
 
 		document = other.getDocument();
 		position = 0;
@@ -52,10 +53,11 @@ public class NGramSetImpl implements NGramSet
 	{
 		words = new ArrayList<String>(size);
 		modifiedWords = new ArrayList<String>(size);
-		wordCounts = new HashMap<String, Integer>(size);
+		word_counts = new HashMap<String, Integer>(size);
 		matches = new HashMap<NGramSet, Double>();
-		this.maxSize = size;
+		window_size = size;
 		ordered_scores = new TreeMap<Double, Integer>();
+		scores_for_primary = new HashMap<NGramSet, Double>();
 	}
 
 	public String processWord(String word)
@@ -94,13 +96,7 @@ public class NGramSetImpl implements NGramSet
 
 	public int consume(HashMap<String, List<NGramSet>> map)
 	{
-		return consume(map, wordCounts);
-	}
-
-	protected int consume(HashMap<String, List<NGramSet>> map, HashMap<String, Integer> wordCounts)
-	{
-		// assert (minScore != 0);
-		assert (maxSize != 0);
+		assert (window_size > 0);
 		assert (score == 0.0D);
 
 		// System.out.print("\nSearching for matches for:\n\n" + toString());
@@ -111,96 +107,116 @@ public class NGramSetImpl implements NGramSet
 		// non-strict matching
 		if (useSrictMatching)
 		{
-			for (Entry<String, Integer> e : wordCounts.entrySet())
-			{
-				String s = e.getKey();
-
-				List<NGramSet> oneWordMatches = map.get(s);
-
-				if (oneWordMatches == null) continue;
-
-				Set<NGramSet> oneWordMatchesUnique = new HashSet<NGramSet>(oneWordMatches);
-
-				assert (oneWordMatches != null);
-				assert (oneWordMatches.size() > 0);
-				assert (oneWordMatchesUnique.size() > 0);
-				assert (oneWordMatchesUnique.size() <= oneWordMatches.size());
-
-				if (oneWordMatches != null)
-				{
-					for (NGramSet possibleMatchNGram : oneWordMatchesUnique)
-					{
-						int currentCount = 0;
-						int increment = 1;
-
-						if (potentialMatches.containsKey(possibleMatchNGram))
-						{
-							currentCount = potentialMatches.get(possibleMatchNGram);
-						}
-						increment = (e.getValue() > possibleMatchNGram.getCountOfWord(s)) ? possibleMatchNGram
-										.getCountOfWord(s) : e.getValue();
-
-						increment += currentCount;
-
-						potentialMatches.put(possibleMatchNGram, increment);
-					}
-				}
-			}
+			runStrictMatch(map, potentialMatches);
 		}
 		else
 		{
-			// non-STRICT matching
-			for (Entry<String, Integer> e : wordCounts.entrySet())
+			runNonStrictMatch(map, potentialMatches);
+		}
+
+		return accumulateMatchesOfSufficientScore(potentialMatches);
+	}
+
+	private void runStrictMatch(HashMap<String, List<NGramSet>> map,
+					HashMap<NGramSet, Integer> potentialMatches)
+	{
+		for (Entry<String, Integer> word_and_count : word_counts.entrySet())
+		{
+			String s = word_and_count.getKey();
+
+			List<NGramSet> oneWordMatches = map.get(s);
+
+			if (oneWordMatches == null) continue;
+
+//			System.out.println("Matching Word: " + s);
+
+			Set<NGramSet> oneWordMatchesUnique = new HashSet<NGramSet>(oneWordMatches);
+
+			assert (oneWordMatches != null);
+			assert (oneWordMatches.size() > 0);
+			assert (oneWordMatchesUnique.size() > 0);
+			assert (oneWordMatchesUnique.size() <= oneWordMatches.size());
+
+			for (NGramSet possibleMatchNGram : oneWordMatchesUnique)
 			{
-				String s = e.getKey();
+				int currentCount = 0;
+				int increment = 1;
 
-				for (int j = e.getValue(); j > 0; j--)
+				if (potentialMatches.containsKey(possibleMatchNGram))
 				{
-					List<NGramSet> oneWordMatches = map.get(s);
+					currentCount = potentialMatches.get(possibleMatchNGram);
+				}
+//				System.out.println("Count of " + s + ": " + possibleMatchNGram.getCountOfWord(s));
+				increment = (word_and_count.getValue() > possibleMatchNGram.getCountOfWord(s)) ? possibleMatchNGram
+								.getCountOfWord(s) : word_and_count.getValue();
 
-					if (oneWordMatches == null) break;
+				increment += currentCount;
+//				System.out.println("Increment: " + increment);
 
-					for (NGramSet possibleMatchNGram : oneWordMatches)
+				potentialMatches.put(possibleMatchNGram, increment);
+			}
+		}
+	}
+
+	private void runNonStrictMatch(HashMap<String, List<NGramSet>> map,
+					HashMap<NGramSet, Integer> potentialMatches)
+	{
+		// non-STRICT matching
+		for (Entry<String, Integer> e : word_counts.entrySet())
+		{
+			String s = e.getKey();
+
+			for (int j = e.getValue(); j > 0; j--)
+			{
+				List<NGramSet> oneWordMatches = map.get(s);
+
+				if (oneWordMatches == null) break;
+
+				for (NGramSet possibleMatchNGram : oneWordMatches)
+				{
+					int currentCount = 0;
+					int increment = 1;
+
+					if (potentialMatches.containsKey(possibleMatchNGram))
 					{
-						int currentCount = 0;
-						int increment = 1;
-
-						if (potentialMatches.containsKey(possibleMatchNGram))
-						{
-							currentCount = potentialMatches.get(possibleMatchNGram);
-						}
-						increment += currentCount;
-						increment = (increment > maxSize) ? maxSize : increment;
-
-						potentialMatches.put(possibleMatchNGram, increment);
+						currentCount = potentialMatches.get(possibleMatchNGram);
 					}
+					increment += currentCount;
+					increment = (increment > window_size) ? window_size : increment;
+
+					potentialMatches.put(possibleMatchNGram, increment);
 				}
 			}
 		}
+	}
 
+	private int accumulateMatchesOfSufficientScore(HashMap<NGramSet, Integer> potentialMatches)
+	{
 		// accumulate matches that meet minimum requirement
 		int c = 0;
-		for (Entry<NGramSet, Integer> e : potentialMatches.entrySet())
+		for (Entry<NGramSet, Integer> potential_match_and_match_count : potentialMatches.entrySet())
 		{
-			NGramSet set = e.getKey();
-			// set.computeScore(e.getValue());
-			set.computeScore();
-			if (set.getScore() >= minScore)
+			NGramSet set = potential_match_and_match_count.getKey();
+			// set.set_match_count(potential_match_and_match_count.getValue());
+			set.computeScore(potential_match_and_match_count.getValue(), this);
+			
+			double score_for_set = set.getScore(this);
+			if (score_for_set >= min_required_score)
 			{
 				int count = 1;
-				if (ordered_scores.containsKey(set.getScore()))
+				if (ordered_scores.containsKey(score_for_set))
 				{
-					count += ordered_scores.get(set.getScore());
+					count += ordered_scores.get(score_for_set);
 				}
-				ordered_scores.put(set.getScore(), count);
+				ordered_scores.put(score_for_set, count);
 
-				matches.put(set, set.getScore());
+				matches.put(set, score_for_set);
 
 				// System.out.println("Found Match: " + e.getKey().toString());
 				// potentialMatches.remove(e.getValue());
 				c++;
 			}
-			if (set.getScore() > score) score = set.getScore();
+			if (score_for_set > score) score = score_for_set;
 		}
 
 		// if(c > 0) System.out.println("Size: " + c);
@@ -212,9 +228,7 @@ public class NGramSetImpl implements NGramSet
 		HashMap<NGramSet, Double> filteredMap = new HashMap<NGramSet, Double>();
 		for (Entry<NGramSet, Double> e : matches.entrySet())
 		{
-			if (e.getKey().getScore() >= bestScore) filteredMap.put(e.getKey(), e.getValue());
-			// if (e.getKey().getScore() < bestScore)
-			// matches.remove(e.getValue());
+			if (e.getKey().getScore(this) >= bestScore) filteredMap.put(e.getKey(), e.getValue());
 		}
 		matches = filteredMap;
 	}
@@ -223,23 +237,19 @@ public class NGramSetImpl implements NGramSet
 	{
 		assert (position < document.size());
 		position++;
-
-		// System.out.println("Position: " + position);
-		// if(position - maxSize > 0)
-		// System.out.println("New Word: " + document.get(position - maxSize));
 	}
 
 	protected String incrementWordCount(String word)
 	{
 		if (isStopWord(word)) return null;
 
-		if (wordCounts.containsKey(word))
+		if (word_counts.containsKey(word))
 		{
-			wordCounts.put(word, wordCounts.get(word) + 1);
+			word_counts.put(word, word_counts.get(word) + 1);
 		}
 		else
 		{
-			wordCounts.put(word, 1);
+			word_counts.put(word, 1);
 		}
 
 		totalCount++;
@@ -249,40 +259,37 @@ public class NGramSetImpl implements NGramSet
 
 	public void popFirstWord()
 	{
-		// assert(words.size() > 0);
 		assert (modifiedWords.size() > 0);
-		assert (wordCounts != null);
-		// assert(words.get(0).equals(document.get(position - maxSize)));
+		assert (word_counts != null);
 
 		String firstWord = modifiedWords.get(0);
 
 		decrementWordCount(firstWord);
 
-		// words.remove(0);
 		modifiedWords.remove(0);
 	}
 
 	protected void decrementWordCount(String word)
 	{
-		assert (wordCounts != null);
+		assert (word_counts != null);
 		if (isStopWord(word)) return;
 
-		assert (wordCounts.get(word) >= 1);
-		assert (wordCounts.containsKey(word));
+		assert (word_counts.get(word) >= 1);
+		assert (word_counts.containsKey(word));
 
-		if (wordCounts.get(word) > 1)
+		if (word_counts.get(word) > 1)
 		{
-			wordCounts.put(word, wordCounts.get(word) - 1);
+			word_counts.put(word, word_counts.get(word) - 1);
 		}
 		else
 		{
-			wordCounts.remove(word);
+			word_counts.remove(word);
 		}
 	}
 
 	public int getCountOfWord(String key)
 	{
-		if (wordCounts.containsKey(key)) { return wordCounts.get(key); }
+		if (word_counts.containsKey(key)) { return word_counts.get(key); }
 		return 0;
 	}
 
@@ -301,7 +308,7 @@ public class NGramSetImpl implements NGramSet
 	public String toString()
 	{
 		StringBuilder st = new StringBuilder();
-		st.append("Primary Match (size: " + maxSize + "): " + leftToString() + "\n");
+		st.append("Primary Match (size: " + window_size + "): " + leftToString() + "\n");
 
 		appendRightToStringBuilder(st);
 
@@ -314,20 +321,25 @@ public class NGramSetImpl implements NGramSet
 		{
 			NGramSetImpl set = (NGramSetImpl) e.getKey();
 
-			st.append("Secondary Match [" + set.getTotalCount() + " words match of "
-							+ set.getMaxSize() + " (" + set.getScore() + ")]:" + set.leftToString());
+			st.append("Secondary Match [" + set.getMatchCount(this) + "/" + set.get_window_size() + " = "
+							+ set.getScore(this) + "]:" + set.leftToString());
 			st.append("\n");
 		}
+	}
+
+	private int getMatchCount(NGramSet set)
+	{
+		return (int) (scores_for_primary.get(set) * window_size);
 	}
 
 	private void appendRightToStringBuilderAtLeast(StringBuilder st, double minscore)
 	{
 		for (Entry<NGramSet, Double> e : matches.entrySet())
 		{
-			if (e.getKey().getScore() < minscore) continue;
+			if (e.getKey().getScore(this) < minscore) continue;
 			NGramSetImpl set = (NGramSetImpl) e.getKey();
 
-			st.append("Secondary Match [" + e.getValue() + " (" + set.getScore() + ")"
+			st.append("Secondary Match [" + e.getValue() + " (" + set.getScore(this) + ")"
 							+ " words match]:" + set.leftToString());
 			st.append("\n");
 		}
@@ -336,23 +348,17 @@ public class NGramSetImpl implements NGramSet
 	public String leftToString()
 	{
 		StringBuilder st = new StringBuilder();
-		st.append(" Position: " + (position - maxSize) + "/" + document.size());
+		st.append(" Position: " + (position - window_size) + "/" + document.size());
 		st.append(' ');
 
 		st.append(' ');
 		st.append(' ');
-		for (int i = position - maxSize; i < position; i++)
+		for (int i = position - window_size; i < position; i++)
 		{
 			assert (i < document.size());
 			st.append(document.get(i));
 			st.append(' ');
 		}
-		// st.append("|||| ");
-		//
-		// for(String word : words) {
-		// st.append(word);
-		// st.append(' ');
-		// }
 
 		st.append("\tbasis [ ");
 		for (String word : modifiedWords)
@@ -391,19 +397,20 @@ public class NGramSetImpl implements NGramSet
 		return matches.entrySet().size();
 	}
 
-	public void computeScore(int value)
+	public void computeScore(int value, NGramSet set)
 	{
-		this.score = (double) value / (double) maxSize;
+		scores_for_primary.put(set, (double) value / (double) window_size);
+		// this.score = ;
 	}
 
 	public void setMinScore(double d)
 	{
-		minScore = d;
+		min_required_score = d;
 	}
 
 	public void setMaxSize(int size)
 	{
-		maxSize = size;
+		window_size = size;
 	}
 
 	public static void setUseStopWords(boolean USESTOPWORDS)
@@ -421,14 +428,14 @@ public class NGramSetImpl implements NGramSet
 		return position;
 	}
 
-	public double getMinScore()
+	public double getMinRequiredScore()
 	{
-		return minScore;
+		return min_required_score;
 	}
 
-	public int getMaxSize()
+	public int get_window_size()
 	{
-		return maxSize;
+		return window_size;
 	}
 
 	public List<String> getDocument()
@@ -436,7 +443,7 @@ public class NGramSetImpl implements NGramSet
 		return document;
 	}
 
-	// public int hashCode() {return wordCounts.hashCode();}
+	// public int hashCode() {return word_counts.hashCode();}
 	public static void setStrictness(boolean STRICT)
 	{
 		useSrictMatching = STRICT;
@@ -444,11 +451,9 @@ public class NGramSetImpl implements NGramSet
 
 	public double findBestScore()
 	{
-		 return score;
-//		if (ordered_scores.size() == 0) return -0.0D;
-//
-//		return ordered_scores.lastKey();
+		return score;
 	}
+
 	public double lowestScore()
 	{
 		if (ordered_scores.size() == 0) return -0.0D;
@@ -488,12 +493,12 @@ public class NGramSetImpl implements NGramSet
 
 	public void computeScore()
 	{
-		this.score = (double) totalCount / (double) maxSize;
+		this.score = (double) totalCount / (double) window_size;
 	}
 
-	public double getScore()
+	public double getScore(NGramSet set)
 	{
-		return score;
+		return scores_for_primary.get(set);
 	}
 
 	public int getTotalCount()
