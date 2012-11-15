@@ -25,27 +25,26 @@ public class InterTextualFinderLooper extends InterTextualFinder
 		List<String> words1 = DocumentScanner.tokenizeFromFile(primarySourcePath);
 		List<String> words2 = DocumentScanner.tokenizeFromFile(secondarySourcePath);
 
-		double min_score = 0.0D;
+		double min_score = 1.0D;
 		final int max = (words1.size() > words2.size()) ? words1.size() : words2.size();
 		for (int i = max; i > 1; i--)
 		{
 			System.out.println("Attempting size: " + i);
-			
+
 			super.setMinimumScore(min_score);
-			
+
 			super.setWindowSize(i);
 
 			super.findIntertextQuotesGivenParamsFromTokenizedLists(words1, words2);
-			
-			super.filterOutNonOptimalMatches();
-			
-//			if(getBestRightMatches().size() < 10)
+
+			super.filterOutNowNonOptimalMatches();
+
+			if (commonNGrams.size() > 0) // &&getBestRightMatches().size() < 10)
 				results.put(i, super.commonNGrams);
 
 			min_score = findBestScore();
-			
-			if(min_score == 1.0D)
-				break;
+
+			if (min_score == 1.0D) break;
 			System.out.println("Number of matches: " + getBestRightMatches().size());
 		}
 
@@ -54,20 +53,21 @@ public class InterTextualFinderLooper extends InterTextualFinder
 		for (Entry<Integer, HashSet<NGramSet>> e : results.entrySet())
 		{
 			count += e.getValue().size();
-			
-//			System.out.println("Number of matches: " + e.getValue().size());
-			
-			all += "\nNumber of matches: " + e.getValue().size() + "\n";
-			
-//			all += e.getValue().toString();
-			for(NGramSet set : e.getValue())
+
+			// System.out.println("Number of matches: " + e.getValue().size());
+
+			all += "\nNumber of primary matches: " + e.getValue().size() + "\n";
+
+			// all += e.getValue().toString();
+			for (NGramSet set : e.getValue())
 			{
 				all += set.toString() + "\n\n";
 			}
 		}
 
 		all += "\nNumber of matches: " + count + " out of " + max + " searches\n";
-//		System.out.println("Number of matches: " + count + " out of " + max + " searches");
+		// System.out.println("Number of matches: " + count + " out of " + max +
+		// " searches");
 
 		super.paramString = "";
 
@@ -78,8 +78,8 @@ public class InterTextualFinderLooper extends InterTextualFinder
 
 		super.paramString += convertParametersToStringWithoutWindowParameters(totalTime,
 						InterTextualFinder.comparer.errorsToString()) + all;
-		
-//		System.out.println(super.paramString);
+
+		// System.out.println(super.paramString);
 	}
 
 	private String convertParametersToStringWithoutWindowParameters(double totalTime,

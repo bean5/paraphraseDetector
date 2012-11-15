@@ -37,9 +37,13 @@ public class GuiLooper
 	// private JTextField txtFieldFileSecondary = new JTextField(corporaBaseDir
 	// + "");
 	private JTextField						txtFieldFilePrimary			= new JTextField(corporaBaseDir
-																										+ "gen1-3.txt");
+																						// +
+																						// "gen1-3.txt");
+																										+ "test3.txt");
 	private JTextField						txtFieldFileSecondary		= new JTextField(corporaBaseDir
-																										+ "19-324a.txt");
+																						// +
+																						// "19-324a.txt");
+																										+ "test4.txt");
 
 	private JLabel								lblFilePrimary					= new JLabel("Primary File");
 	private JLabel								lblFileSecondary				= new JLabel("Secondary File");

@@ -2,7 +2,6 @@ package interTextFinder;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 
 import fileio.DocumentSaver;
@@ -74,8 +73,8 @@ public class InterTextualFinder
 	 */
 	private void filterNGrams(int minimumSecondaryMatches)
 	{
-		if(minimumSecondaryMatches <= 1) return;
-		
+		if (minimumSecondaryMatches <= 1) return;
+
 		HashSet<NGramSet> filteredCommonNGrams = new HashSet<NGramSet>(commonNGrams.size());
 
 		for (NGramSet ngram : commonNGrams)
@@ -103,12 +102,8 @@ public class InterTextualFinder
 		if (printBestOnly) minscore = findBestScore();
 		// System.out.println("Here" + minscore);
 
-		Iterator<NGramSet> itr = commonNGrams.iterator();
-
-		// for(NGramSet n : commonNGrams) {
-		while (itr.hasNext())
+		for (NGramSet nGram : commonNGrams)
 		{
-			NGramSet nGram = itr.next();
 			// str.append(nGram.toString());
 			if (nGram.hasMatchesOfAtLeastScore(minscore))
 			{
@@ -135,12 +130,8 @@ public class InterTextualFinder
 		double bestScore = findBestScore();
 		HashSet<NGramSet> best = new HashSet<NGramSet>();
 
-		Iterator<NGramSet> itr = commonNGrams.iterator();
-
-		while (itr.hasNext())
+		for (NGramSet nGram : commonNGrams)
 		{
-			NGramSet nGram = itr.next();
-
 			double bestScoreOfNGram = nGram.findBestScore();
 
 			if (bestScoreOfNGram >= bestScore) best.add(nGram);
@@ -149,7 +140,7 @@ public class InterTextualFinder
 		return best;
 	}
 
-	protected void filterOutNonOptimalMatches()
+	protected void filterOutNowNonOptimalMatches()
 	{
 		double bestScore = findBestScore();
 
