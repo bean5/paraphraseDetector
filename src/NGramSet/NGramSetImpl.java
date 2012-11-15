@@ -10,7 +10,7 @@ import java.util.TreeMap;
 
 public class NGramSetImpl implements NGramSet
 {
-	protected double							min_required_score	= 0.0D;
+	protected static double					min_required_score	= 0.0D;
 	public int									window_size;
 	protected static boolean				matchCase				= false;
 	protected static boolean				useStopWords			= true;
@@ -47,6 +47,7 @@ public class NGramSetImpl implements NGramSet
 			processModifiedWord(word);
 		}
 		position = other.getPosition();
+		min_required_score = other.getMinRequiredScore();
 	}
 
 	protected void initialize(int size)
@@ -201,6 +202,7 @@ public class NGramSetImpl implements NGramSet
 			set.computeScore(potential_match_and_match_count.getValue(), this);
 			
 			double score_for_set = set.getScore(this);
+//			System.out.println("score for set: " + score_for_set + " min req: " + min_required_score);
 			if (score_for_set >= min_required_score)
 			{
 				int count = 1;
@@ -339,8 +341,8 @@ public class NGramSetImpl implements NGramSet
 			if (e.getKey().getScore(this) < minscore) continue;
 			NGramSetImpl set = (NGramSetImpl) e.getKey();
 
-			st.append("Secondary Match [" + e.getValue() + " (" + set.getScore(this) + ")"
-							+ " words match]:" + set.leftToString());
+			st.append("Secondary Match [" + set.getMatchCount(this) + "/" + set.get_window_size() + " = "
+							+ set.getScore(this) + "]:" + set.leftToString());
 			st.append("\n");
 		}
 	}
