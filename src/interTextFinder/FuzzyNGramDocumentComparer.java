@@ -13,20 +13,20 @@ import NGramSet.NGramSetImpl;
 
 public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements DocumentCommonalityFinder
 {
-	protected boolean							isTesting			= false;
-	protected boolean							STRICT				= false;
-	protected boolean							usePorterStemmer	= false;
-	protected boolean							matchCase			= true;
-	protected int								totalRightMatches	= 0;
-	private boolean							USESTOPWORDS		= true;
-	protected TreeMap<Double, Integer>	ordered_scores;
-	private List<Error>						errors;
+	protected boolean					isTesting			= false;
+	protected boolean					STRICT				= false;
+	protected boolean					usePorterStemmer	= false;
+	protected boolean					matchCase			= true;
+	protected int						totalRightMatches	= 0;
+	private boolean					USESTOPWORDS		= true;
+	private List<Error>				errors;
 
-	public HashSet<NGramSet> findCommonNGrams(List<String> words1, List<String> words2, double min_score,
-					int max, boolean maximizePrimaryWindowSize)
+	protected ComparerStatistics	stats;
+
+	public HashSet<NGramSet> findCommonNGrams(List<String> words1, List<String> words2,
+					double min_score, int max, boolean maximizePrimaryWindowSize)
 	{
-		ordered_scores = new TreeMap<Double, Integer>();
-
+		stats = new ComparerStatistics();
 		errors = new ArrayList<Error>();
 		HashSet<NGramSet> NGramsWithMatches = new HashSet<NGramSet>();
 
@@ -65,11 +65,10 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 
 		ArrayList<NGramSet> nGrams1 = null;
 
-
 		nGrams1 = getAllNGramsOfSize(words1, min_score, leftMax, null);
 
 		getAllNGramsOfSize(words2, min_score, rightMax, map);
-			
+
 		findAllCommon(NGramsWithMatches, nGrams1, map);
 
 		return NGramsWithMatches;
@@ -96,36 +95,23 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 					HashMap<String, List<NGramSet>> map)
 	{
 		totalRightMatches = 0;
-		for (NGramSet ngram : nGrams)
+		for (NGramSet set : nGrams)
 		{
-			totalRightMatches += ngram.consume(map);
-			updateScores(ngram.getScores());
-			if (ngram.hasMatches())
+			totalRightMatches += set.consume(map);
+			if (set.hasMatches())
 			{
-				NGramsWithMatches.add(ngram);
+				updateScores(set.getScores());
+				stats.incrementLeftCount();
+				stats.setRightCount(set.size());
+
+				NGramsWithMatches.add(set);
 			}
 		}
 	}
 
 	private void updateScores(TreeMap<Double, Integer> scores)
 	{
-		// System.out.println("Score: " + scores.size());
-		for (Entry<Double, Integer> score : scores.entrySet())
-		{
-			Integer count = ordered_scores.get(score.getKey());
-
-			// System.out.println("Score: " + score.getValue());
-			if (count == null)
-			{
-				// System.out.println("Score: " + score.getValue());
-				ordered_scores.put(score.getKey(), score.getValue());
-			}
-			else
-			{
-				// System.out.println("Score: " + score.getValue());
-				ordered_scores.put(score.getKey(), count + score.getValue());
-			}
-		}
+		stats.ordered_scores.putAll(scores);
 	}
 
 	private ArrayList<NGramSet> getAllNGramsOfSize(List<String> words, double min_score,
@@ -298,5 +284,10 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 		}
 
 		return errorString + "\n\n";
+	}
+
+	public ComparerStatistics getStats()
+	{
+		return stats;
 	}
 }

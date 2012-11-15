@@ -1,12 +1,11 @@
 package interTextFinder;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
+import fileio.DocumentSaver;
 import fileio.DocumentScanner;
 
 import NGramSet.NGramSet;
@@ -31,6 +30,8 @@ public class InterTextualFinder
 	private boolean															useStopWords					= true;
 	private boolean															printBestOnly					= true;
 
+	protected ComparerStatistics											stats;
+
 	/*
 	 * Starts a timer, reads in files, and calls string version of function
 	 */
@@ -51,24 +52,10 @@ public class InterTextualFinder
 		paramString = convertParametersToString(totalTime, comparer.errorsToString());
 	}
 
-	//
-	// /*
-	// * sets parameters, initiates search for common words
-	// */
-	// private void findIntertextQuotesGivenParamsFromStrings(String
-	// primarySourceText,
-	// String secondarySourceText)
-	// {
-	// List<String> words1 = DocumentScanner.tokenizeString(primarySourceText);
-	// List<String> words2 = DocumentScanner.tokenizeString(secondarySourceText);
-	//
-	// findIntertextQuotesGivenParamsFromTokenizedLists(words1, words2);
-	// }
-
 	public void findIntertextQuotesGivenParamsFromTokenizedLists(List<String> words1,
 					List<String> words2)
 	{
-//		if (maximizePrimaryWindowSize) minimum_score = 1;
+		// if (maximizePrimaryWindowSize) minimum_score = 1;
 		comparer.setMatchCase(matchCase);
 		comparer.setStrict(strictSearch);
 		comparer.setPorterStemmerUsage(usePorterStemmer);
@@ -76,6 +63,8 @@ public class InterTextualFinder
 
 		commonNGrams = comparer.findCommonNGrams(words1, words2, minimum_score, windowSize,
 						maximizePrimaryWindowSize);
+
+		stats = comparer.getStats();
 
 		filterNGrams(minimumSecondaryMatches);
 	}
@@ -85,6 +74,8 @@ public class InterTextualFinder
 	 */
 	private void filterNGrams(int minimumSecondaryMatches)
 	{
+		if(minimumSecondaryMatches <= 1) return;
+		
 		HashSet<NGramSet> filteredCommonNGrams = new HashSet<NGramSet>(commonNGrams.size());
 
 		for (NGramSet ngram : commonNGrams)
@@ -100,7 +91,7 @@ public class InterTextualFinder
 	/*
 	 * Outputs the settings as a string, as well as some of the ngrams
 	 */
-	public static String toString(String paramsAsString, HashSet<NGramSet> commonNGrams,
+	public String toString(String paramsAsString, HashSet<NGramSet> commonNGrams,
 					boolean printBestOnly)
 	{
 		StringBuilder str = new StringBuilder();
@@ -109,7 +100,7 @@ public class InterTextualFinder
 		int rightCount = 0;
 
 		double minscore = 0D;
-		if (printBestOnly) minscore = findBestScore(commonNGrams);
+		if (printBestOnly) minscore = findBestScore();
 		// System.out.println("Here" + minscore);
 
 		Iterator<NGramSet> itr = commonNGrams.iterator();
@@ -133,38 +124,15 @@ public class InterTextualFinder
 
 		return stringToSaveToFile;
 	}
-	
+
 	protected double findBestScore()
 	{
-		return findBestScore(commonNGrams);
-	}
-
-	/*
-	 * @param in commonNGrams nGrams alignments
-	 * 
-	 * @param out double best score
-	 */
-	private static double findBestScore(HashSet<NGramSet> commonNGrams)
-	{
-		double best = 0D;
-
-		Iterator<NGramSet> itr = commonNGrams.iterator();
-
-		while (itr.hasNext())
-		{
-			NGramSet nGram = itr.next();
-
-			double bestScoreOfNGram = nGram.findBestScore();
-
-			if (bestScoreOfNGram > best) best = bestScoreOfNGram;
-		}
-
-		return best;
+		return stats.getHighestScore();
 	}
 
 	protected HashSet<NGramSet> getBestRightMatches()
 	{
-		double bestScore = findBestScore(commonNGrams);
+		double bestScore = findBestScore();
 		HashSet<NGramSet> best = new HashSet<NGramSet>();
 
 		Iterator<NGramSet> itr = commonNGrams.iterator();
@@ -183,7 +151,7 @@ public class InterTextualFinder
 
 	protected void filterOutNonOptimalMatches()
 	{
-		double bestScore = findBestScore(commonNGrams);
+		double bestScore = findBestScore();
 
 		filterOutMatchesOfLessThanScore(bestScore);
 	}
@@ -191,7 +159,7 @@ public class InterTextualFinder
 	private void filterOutMatchesOfLessThanScore(double bestScore)
 	{
 		HashSet<NGramSet> filteredSet = new HashSet<NGramSet>();
-		for(NGramSet nGram : commonNGrams)
+		for (NGramSet nGram : commonNGrams)
 		{
 			nGram.filterMatchesWithScoresLowerThan(bestScore);
 			if (nGram.size() != 0)
@@ -272,19 +240,7 @@ public class InterTextualFinder
 
 	public void saveTo(String outFilePath)
 	{
-		try
-		{
-			// Create file
-			FileWriter fstream = new FileWriter(outFilePath);
-			BufferedWriter out = new BufferedWriter(fstream);
-			out.write(toString());
-			// Close the output stream
-			out.close();
-		}
-		catch (Exception e)
-		{// Catch exception if any
-			System.err.println("Error: " + e.getMessage());
-		}
+		DocumentSaver.saveToFile(outFilePath, toString());
 	}
 
 	public String toString()

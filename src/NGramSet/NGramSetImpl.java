@@ -10,23 +10,24 @@ import java.util.TreeMap;
 
 public class NGramSetImpl implements NGramSet
 {
-	protected double								minScore				= 0.0D;
-	public int										maxSize;
-	protected static boolean					matchCase			= false;
-	protected static boolean					useStopWords		= true;
-	protected static boolean					useSrictMatching	= true;
+	protected double							minScore				= 0.0D;
+	public int									maxSize;
+	protected static boolean				matchCase			= false;
+	protected static boolean				useStopWords		= true;
+	protected static boolean				useSrictMatching	= true;
 
-	protected int									position				= 0;
-	protected int									totalCount			= 0;
+	protected int								position				= 0;
+	protected int								totalCount			= 0;
 
-	protected List<String>						document;
+	protected List<String>					document;
 
-	protected List<String>						words;
-	protected List<String>						modifiedWords;
+	protected List<String>					words;
+	protected List<String>					modifiedWords;
 
-	protected HashMap<String, Integer>		wordCounts;
-	protected HashMap<NGramSet, Integer>	matches;
-	protected TreeMap<Double, Integer>		ordered_scores;
+	protected HashMap<String, Integer>	wordCounts;
+	protected HashMap<NGramSet, Double>	matches;
+	protected TreeMap<Double, Integer>	ordered_scores;
+	private double								score					= 0.0D;
 
 	public NGramSetImpl(int size)
 	{
@@ -52,17 +53,13 @@ public class NGramSetImpl implements NGramSet
 		words = new ArrayList<String>(size);
 		modifiedWords = new ArrayList<String>(size);
 		wordCounts = new HashMap<String, Integer>(size);
-		matches = new HashMap<NGramSet, Integer>();
+		matches = new HashMap<NGramSet, Double>();
 		this.maxSize = size;
 		ordered_scores = new TreeMap<Double, Integer>();
 	}
 
-	// protected void addWord(String word) {words.add(word);}
-
 	public String processWord(String word)
 	{
-		// addWord(word);
-
 		String modifiedWord = modifyWord(word);
 
 		return processModifiedWord(modifiedWord);
@@ -102,9 +99,9 @@ public class NGramSetImpl implements NGramSet
 
 	protected int consume(HashMap<String, List<NGramSet>> map, HashMap<String, Integer> wordCounts)
 	{
-//		assert (minScore != 0);
+		// assert (minScore != 0);
 		assert (maxSize != 0);
-		// assert (minScore <= maxSize);
+		assert (score == 0.0D);
 
 		// System.out.print("\nSearching for matches for:\n\n" + toString());
 
@@ -185,32 +182,35 @@ public class NGramSetImpl implements NGramSet
 		int c = 0;
 		for (Entry<NGramSet, Integer> e : potentialMatches.entrySet())
 		{
-			if (e.getValue() >= minScore)
+			NGramSet set = e.getKey();
+			// set.computeScore(e.getValue());
+			set.computeScore();
+			if (set.getScore() >= minScore)
 			{
 				int count = 1;
-				if (ordered_scores.containsKey((double) e.getValue()))
+				if (ordered_scores.containsKey(set.getScore()))
 				{
-					count += ordered_scores.get((double) e.getValue());
+					count += ordered_scores.get(set.getScore());
 				}
-				ordered_scores.put(e.getKey().getScore(), count);
+				ordered_scores.put(set.getScore(), count);
 
-				matches.put(e.getKey(), e.getValue());
+				matches.put(set, set.getScore());
 
 				// System.out.println("Found Match: " + e.getKey().toString());
 				// potentialMatches.remove(e.getValue());
 				c++;
 			}
+			if (set.getScore() > score) score = set.getScore();
 		}
-		// if(c > 0) System.out.println("Size: " + c);
 
-		potentialMatches = null;
+		// if(c > 0) System.out.println("Size: " + c);
 		return c;
 	}
 
 	public void filterMatchesWithScoresLowerThan(double bestScore)
 	{
-		HashMap<NGramSet, Integer> filteredMap = new HashMap<NGramSet, Integer>();
-		for (Entry<NGramSet, Integer> e : matches.entrySet())
+		HashMap<NGramSet, Double> filteredMap = new HashMap<NGramSet, Double>();
+		for (Entry<NGramSet, Double> e : matches.entrySet())
 		{
 			if (e.getKey().getScore() >= bestScore) filteredMap.put(e.getKey(), e.getValue());
 			// if (e.getKey().getScore() < bestScore)
@@ -310,25 +310,25 @@ public class NGramSetImpl implements NGramSet
 
 	protected void appendRightToStringBuilder(StringBuilder st)
 	{
-		for (Entry<NGramSet, Integer> e : matches.entrySet())
+		for (Entry<NGramSet, Double> e : matches.entrySet())
 		{
-			NGramSetImpl s = (NGramSetImpl) e.getKey();
+			NGramSetImpl set = (NGramSetImpl) e.getKey();
 
-			st.append("Secondary Match [" + e.getKey().getTotalCount() + " words match of "
-							+ s.getMaxSize() + " (" + e.getKey().getScore() + ")]:" + s.leftToString());
+			st.append("Secondary Match [" + set.getTotalCount() + " words match of "
+							+ set.getMaxSize() + " (" + set.getScore() + ")]:" + set.leftToString());
 			st.append("\n");
 		}
 	}
 
 	private void appendRightToStringBuilderAtLeast(StringBuilder st, double minscore)
 	{
-		for (Entry<NGramSet, Integer> e : matches.entrySet())
+		for (Entry<NGramSet, Double> e : matches.entrySet())
 		{
 			if (e.getKey().getScore() < minscore) continue;
-			NGramSetImpl s = (NGramSetImpl) e.getKey();
+			NGramSetImpl set = (NGramSetImpl) e.getKey();
 
-			st.append("Secondary Match [" + e.getValue() + " (" + e.getKey().getScore() + ")"
-							+ " words match]:" + s.leftToString());
+			st.append("Secondary Match [" + e.getValue() + " (" + set.getScore() + ")"
+							+ " words match]:" + set.leftToString());
 			st.append("\n");
 		}
 	}
@@ -391,6 +391,11 @@ public class NGramSetImpl implements NGramSet
 		return matches.entrySet().size();
 	}
 
+	public void computeScore(int value)
+	{
+		this.score = (double) value / (double) maxSize;
+	}
+
 	public void setMinScore(double d)
 	{
 		minScore = d;
@@ -439,9 +444,15 @@ public class NGramSetImpl implements NGramSet
 
 	public double findBestScore()
 	{
-		if (ordered_scores.size() == 0) return 0D;
-
-		return ordered_scores.lastKey();
+		 return score;
+//		if (ordered_scores.size() == 0) return -0.0D;
+//
+//		return ordered_scores.lastKey();
+	}
+	public double lowestScore()
+	{
+		if (ordered_scores.size() == 0) return -0.0D;
+		return ordered_scores.firstKey();
 	}
 
 	public boolean hasMatchesOfAtLeastScore(double minscore)
@@ -462,7 +473,7 @@ public class NGramSetImpl implements NGramSet
 	public int countMatchesOfAtLeastScore(double minscore)
 	{
 		int count = 0;
-		for (Entry<NGramSet, Integer> e : matches.entrySet())
+		for (Entry<NGramSet, Double> e : matches.entrySet())
 		{
 			if (e.getValue() >= minscore) count++;
 		}
@@ -475,9 +486,14 @@ public class NGramSetImpl implements NGramSet
 		return ordered_scores;
 	}
 
+	public void computeScore()
+	{
+		this.score = (double) totalCount / (double) maxSize;
+	}
+
 	public double getScore()
 	{
-		return (double) totalCount / (double) (maxSize);
+		return score;
 	}
 
 	public int getTotalCount()

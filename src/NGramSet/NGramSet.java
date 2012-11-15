@@ -34,7 +34,6 @@ public interface NGramSet {
 	List<String> getDocument();
 
 	int getPosition();
-//	int hashCode();
 
 	double findBestScore();
 
@@ -51,4 +50,8 @@ public interface NGramSet {
 	void filterMatchesWithScoresLowerThan(double bestScore);
 	
 	public int getTotalCount();
+
+	void computeScore();
+
+	double lowestScore();
 }
