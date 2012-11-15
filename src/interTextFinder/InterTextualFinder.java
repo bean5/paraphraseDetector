@@ -49,6 +49,7 @@ public class InterTextualFinder
 		totalTime = totalTime / 10;
 
 		paramString = convertParametersToString(totalTime, comparer.errorsToString());
+		System.out.println(paramString);
 	}
 
 	public void findIntertextQuotesGivenParamsFromTokenizedLists(List<String> words1,
@@ -167,7 +168,7 @@ public class InterTextualFinder
 	protected String convertParametersToString(double totalTime, String errorString)
 	{
 		String params = new String();
-
+		
 		params += sourcePathsAsString();
 
 		params += checkBoxParamsAsString();
@@ -176,10 +177,11 @@ public class InterTextualFinder
 
 		params += "Require at least " + minimumSecondaryMatches + " secondary matches\n";
 
-		params = timeToCompleteAsString(totalTime);
+		params += timeToCompleteAsString(totalTime);
 
 		params += errorString;
 
+//System.out.println(params);
 		return params;
 	}
 

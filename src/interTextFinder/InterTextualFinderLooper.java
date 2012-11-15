@@ -12,19 +12,30 @@ import NGramSet.NGramSet;
 public class InterTextualFinderLooper extends InterTextualFinder
 {
 	TreeMap<Integer, HashSet<NGramSet>>	results	= new TreeMap<Integer, HashSet<NGramSet>>();
-
+	double best_score = 0.0D;
+	
 	public InterTextualFinderLooper()
 	{
 		super();
 	}
+	
+	public void findIntertextQuotesGivenParamsFromStrings(String text1, String text2)
+	{
+		List<String> words1 = DocumentScanner.tokenizeString(text1);
+		List<String> words2 = DocumentScanner.tokenizeString(text2);
+		
+		findIntertextQuotesGivenParamsFromTokenizedLists(words1, words2);
+	}
 
 	public void findIntertextQuotesFromFiles() throws IOException
 	{
+		best_score = 0D;
 		double start = System.currentTimeMillis();
 
 		List<String> words1 = DocumentScanner.tokenizeFromFile(primarySourcePath);
 		List<String> words2 = DocumentScanner.tokenizeFromFile(secondarySourcePath);
 
+		// double min_score = 0.0D;
 		double min_score = 0.3D;
 		final int max = (words1.size() > words2.size()) ? words1.size() : words2.size();
 		for (int i = max; i > 1; i--)
@@ -39,21 +50,21 @@ public class InterTextualFinderLooper extends InterTextualFinder
 
 			super.filterOutNowNonOptimalMatches();
 
-			if (commonNGrams.size() > 0) // &&getBestRightMatches().size() < 10)
+			if (commonNGrams.size() > 0 && (stats.getHighestScore() == 1 || stats.get_left_count() < 10 && stats.get_right_count() < 10))
 				results.put(i, super.commonNGrams);
 
-			min_score = findBestScore();
+			best_score = findBestScore();
+
+			if (best_score > min_score)
+				min_score = best_score;
 
 			System.out.println("Number of matches: " + getBestRightMatches().size());
-			if (min_score == 1.0D) break;
+			if (best_score == 1.0D) break;
 		}
 
 		String all = "";
-		int count = 0;
 		for (Entry<Integer, HashSet<NGramSet>> e : results.entrySet())
 		{
-			count += e.getValue().size();
-
 			// System.out.println("Number of matches: " + e.getValue().size());
 
 			all += "\nNumber of primary matches: " + e.getValue().size() + "\n";
@@ -64,7 +75,8 @@ public class InterTextualFinderLooper extends InterTextualFinder
 			}
 		}
 
-		all += "\nNumber of matches: " + count + " out of " + max + " searches\n";
+		// all += "\nNumber of matches: " + count + " out of " + max +
+		// " searches\n";
 		// System.out.println("Number of matches: " + count + " out of " + max +
 		// " searches");
 
@@ -99,6 +111,6 @@ public class InterTextualFinderLooper extends InterTextualFinder
 
 	public String toString()
 	{
-		return super.paramString;
+		return super.paramString + "\n";// + "Higest Score: " + best_score;
 	}
 }

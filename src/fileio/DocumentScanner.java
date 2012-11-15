@@ -1,6 +1,5 @@
 package fileio;
 
-import interTextFinder.characterEvaluater;
 
 import java.io.File;
 import java.io.FileInputStream;

@@ -32,14 +32,15 @@ public class IntertextualFinderGui
 	static String								corporaBaseDir					= "corpora/";
 	static String								resultsBaseDir					= "intertext_results/";
 
-	 private JTextField txtFieldFilePrimary = new JTextField(corporaBaseDir
-	 + "");
-	 private JTextField txtFieldFileSecondary = new JTextField(corporaBaseDir
-	 + "");
-//	private JTextField						txtFieldFilePrimary			= new JTextField(corporaBaseDir
-//																										+ "test.txt");
-//	private JTextField						txtFieldFileSecondary		= new JTextField(corporaBaseDir
-//																										+ "test2.txt");
+	private JTextField						txtFieldFilePrimary			= new JTextField(corporaBaseDir
+																										+ "");
+	private JTextField						txtFieldFileSecondary		= new JTextField(corporaBaseDir
+																										+ "");
+	
+//	 private JTextField txtFieldFilePrimary = new JTextField(corporaBaseDir
+//	 + "test.txt");
+//	 private JTextField txtFieldFileSecondary = new JTextField(corporaBaseDir
+//	 + "test2.txt");
 
 	private JLabel								lblFilePrimary					= new JLabel("Primary File");
 	private JLabel								lblFileSecondary				= new JLabel("Secondary File");
@@ -87,8 +88,8 @@ public class IntertextualFinderGui
 																										false);
 	private JCheckBox							checkBestScoresOnly			= new JCheckBox(
 																										"Print Best Scores Only",
-																										// false);
-																										true);
+																										 false);
+//																										true);
 
 	private JTextArea							textArea							= new JTextArea(20, 80);
 
@@ -227,12 +228,15 @@ public class IntertextualFinderGui
 			{
 				min.selectAll();
 				min.setCaretPosition(min.getDocument().getLength());
-				// if(true) return;
 
 				finder.setPrimaryPath(txtFieldFilePrimary.getText().trim());
 				finder.setSecondaryPath(txtFieldFileSecondary.getText().trim());
 
-				finder.setMinimumScore(Integer.parseInt(min.getText().trim()));
+				if(Integer.parseInt(min.getText().trim()) < Integer.parseInt(max.getText().trim()))
+					finder.setMinimumScore(Double.parseDouble(min.getText().trim()) / Double.parseDouble(max.getText().trim()));
+				else
+					finder.setMinimumScore(Double.parseDouble(max.getText().trim()) / Double.parseDouble(min.getText().trim()));
+				
 				finder.setWindowSize(Integer.parseInt(max.getText().trim()));
 				finder.setMinimumSecondaryMatches(Integer
 								.parseInt(minSecondaryMatches.getText().trim()));
@@ -289,10 +293,6 @@ public class IntertextualFinderGui
 			{
 				// System.exit(0);
 				// launch about frame
-			}
-			else if (source == min)
-			{
-
 			}
 		}
 

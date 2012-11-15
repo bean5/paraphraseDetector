@@ -47,6 +47,7 @@ public class NGramSetImpl implements NGramSet
 			processModifiedWord(word);
 		}
 		position = other.getPosition();
+		min_required_score = other.getMinRequiredScore();
 	}
 
 	protected void initialize(int size)
@@ -128,7 +129,7 @@ public class NGramSetImpl implements NGramSet
 
 			if (oneWordMatches == null) continue;
 
-//			System.out.println("Matching Word: " + s);
+			// System.out.println("Matching Word: " + s);
 
 			Set<NGramSet> oneWordMatchesUnique = new HashSet<NGramSet>(oneWordMatches);
 
@@ -146,12 +147,13 @@ public class NGramSetImpl implements NGramSet
 				{
 					currentCount = potentialMatches.get(possibleMatchNGram);
 				}
-//				System.out.println("Count of " + s + ": " + possibleMatchNGram.getCountOfWord(s));
+				// System.out.println("Count of " + s + ": " +
+				// possibleMatchNGram.getCountOfWord(s));
 				increment = (word_and_count.getValue() > possibleMatchNGram.getCountOfWord(s)) ? possibleMatchNGram
 								.getCountOfWord(s) : word_and_count.getValue();
 
 				increment += currentCount;
-//				System.out.println("Increment: " + increment);
+				// System.out.println("Increment: " + increment);
 
 				potentialMatches.put(possibleMatchNGram, increment);
 			}
@@ -197,10 +199,11 @@ public class NGramSetImpl implements NGramSet
 		for (Entry<NGramSet, Integer> potential_match_and_match_count : potentialMatches.entrySet())
 		{
 			NGramSet set = potential_match_and_match_count.getKey();
-			// set.set_match_count(potential_match_and_match_count.getValue());
 			set.computeScore(potential_match_and_match_count.getValue(), this);
-			
+
 			double score_for_set = set.getScore(this);
+			 System.out.println("score for set: " + score_for_set + " min req: "
+			 + min_required_score);
 			if (score_for_set >= min_required_score)
 			{
 				int count = 1;
@@ -321,8 +324,8 @@ public class NGramSetImpl implements NGramSet
 		{
 			NGramSetImpl set = (NGramSetImpl) e.getKey();
 
-			st.append("Secondary Match [" + set.getMatchCount(this) + "/" + set.get_window_size() + " = "
-							+ set.getScore(this) + "]:" + set.leftToString());
+			st.append("Secondary Match [" + set.getMatchCount(this) + "/" + set.get_window_size()
+							+ " = " + set.getScore(this) + "]:" + set.leftToString());
 			st.append("\n");
 		}
 	}
@@ -339,8 +342,8 @@ public class NGramSetImpl implements NGramSet
 			if (e.getKey().getScore(this) < minscore) continue;
 			NGramSetImpl set = (NGramSetImpl) e.getKey();
 
-			st.append("Secondary Match [" + e.getValue() + " (" + set.getScore(this) + ")"
-							+ " words match]:" + set.leftToString());
+			st.append("Secondary Match [" + set.getMatchCount(this) + "/" + set.get_window_size()
+							+ " = " + set.getScore(this) + "]:" + set.leftToString());
 			st.append("\n");
 		}
 	}
