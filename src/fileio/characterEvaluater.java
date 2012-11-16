@@ -1,21 +1,19 @@
-package fileio ;
+package fileio;
 
-public class characterEvaluater {
-	public static boolean isAlphaOrDashFollowedByAlpha(char currChar, char nextChar) {
-		return
-			isAlpha(currChar)
-			||
-			( is(currChar, '-') && isAlpha(nextChar) )
-		;
+public class characterEvaluater
+{
+	public static boolean isAlphaOrDashFollowedByAlpha(char currChar, char nextChar)
+	{
+		return isAlpha(currChar) || (is(currChar, '-') && isAlpha(nextChar));
 	}
 
-	protected static boolean is(char currChar, char c) {return currChar == c;}
+	protected static boolean is(char currChar, char c)
+	{
+		return currChar == c;
+	}
 
-	protected static boolean isAlpha(char currChar) {
-		return 
-			(currChar >= 'a' && currChar <= 'z')
-			||
-			(currChar >= 'A' && currChar <= 'Z')
-		;
+	protected static boolean isAlpha(char currChar)
+	{
+		return (currChar >= 'a' && currChar <= 'z') || (currChar >= 'A' && currChar <= 'Z');
 	}
 }
