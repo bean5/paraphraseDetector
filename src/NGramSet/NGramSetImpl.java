@@ -8,6 +8,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+import CharacterData.StopWordChecker;
+
 public class NGramSetImpl implements NGramSet
 {
 	protected double							min_required_score	= 0.0D;
@@ -299,13 +301,7 @@ public class NGramSetImpl implements NGramSet
 	public boolean isStopWord(String word)
 	{
 		if (useStopWords == false) return false;
-		return word.equals("The") || word.equals("the") || word.equals("And") || word.equals("and")
-						|| word.equals("Of") || word.equals("of") || word.equals("That")
-						|| word.equals("that") || word.equals("To") || word.equals("to")
-						|| word.equals("They") || word.equals("they") || word.equals("Unto")
-						|| word.equals("unto") || word.equals("I") || word.equals("i")
-						|| word.equals("He") || word.equals("he") || word.equals("It")
-						|| word.equals("it");
+		return StopWordChecker.isStopWord(word);
 	}
 
 	public String toString()

@@ -1,5 +1,7 @@
 package NGramSet;
 
+import CharacterData.PorterStemmer;
+
 public class NGramSetImplStemmed extends NGramSetImpl implements NGramSet
 {
 	public NGramSetImplStemmed(int size)
@@ -34,7 +36,7 @@ public class NGramSetImplStemmed extends NGramSetImpl implements NGramSet
 
 	protected String findWordStem(String word)
 	{
-		final PorterStemmer stem = new PorterStemmer();
+		PorterStemmer stem = new PorterStemmer();
 		char[] letters = word.toCharArray();
 		for (int i = 0; i < letters.length; i++)
 		{
@@ -45,18 +47,5 @@ public class NGramSetImplStemmed extends NGramSetImpl implements NGramSet
 		String stemmed = stem.toString();
 		// System.out.println("Word stemmed:\t" + word + ":" + stemmed);
 		return stemmed;
-	}
-
-	@Override
-	public boolean isStopWord(String word)
-	{
-		if (useStopWords == false) return false;
-		return word.equals("The") || word.equals("the") || word.equals("And") || word.equals("and")
-						|| word.equals("Of") || word.equals("of") || word.equals("That")
-						|| word.equals("that") || word.equals("To") || word.equals("to")
-						|| word.equals("Thei") || word.equals("thei") || word.equals("Unto")
-						|| word.equals("unto") || word.equals("I") || word.equals("i")
-						|| word.equals("He") || word.equals("he") || word.equals("It")
-						|| word.equals("it");
 	}
 }

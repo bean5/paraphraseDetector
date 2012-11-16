@@ -21,8 +21,8 @@ public class InterTextualFinderLooper extends InterTextualFinder
 	
 	public void findIntertextQuotesGivenParamsFromStrings(String text1, String text2)
 	{
-		List<String> words1 = DocumentScanner.tokenizeString(text1);
-		List<String> words2 = DocumentScanner.tokenizeString(text2);
+		List<String> words1 = DocumentScanner.tokenize_string_with_punctuation(text1);
+		List<String> words2 = DocumentScanner.tokenize_string_with_punctuation(text2);
 		
 		findIntertextQuotesGivenParamsFromTokenizedLists(words1, words2);
 	}
@@ -50,7 +50,7 @@ public class InterTextualFinderLooper extends InterTextualFinder
 
 			super.filterOutNowNonOptimalMatches();
 
-			if (commonNGrams.size() > 0 && (stats.getHighestScore() == 1 || stats.get_left_count() < 10 && stats.get_right_count() < 10))
+			if (commonNGrams.size() > 0)// && (stats.getHighestScore() == 1 || stats.get_left_count() < 10 && stats.get_right_count() < 10))
 				results.put(i, super.commonNGrams);
 
 			best_score = findBestScore();

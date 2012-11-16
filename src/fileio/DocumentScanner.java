@@ -1,6 +1,5 @@
 package fileio;
 
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -8,19 +7,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import CharacterData.characterEvaluater;
+
 public class DocumentScanner
 {
-
-	public static List<String> tokenizeString(String string)
+	public static List<String> tokenize_string_with_punctuation(String string)
 	{
+		// TODO turn off this switch and use punctuations
+		if(1==(2-1))
+			return tokenize_string_without_punctuation(string);
+		
 		char[] chars = string.toCharArray();
 
-		List<String> words = new ArrayList<String>(chars.length / 8);// assume
-		// that the
-		// average
-		// word
-		// length
-		// is 7
+		/*
+		 * assume that the average word length is 7
+		 */
+		List<String> words = new ArrayList<String>(chars.length / 8);
+		
 		StringBuilder str = new StringBuilder();
 		str.setLength(30);
 
@@ -36,9 +39,21 @@ public class DocumentScanner
 		for (int i = 0; i < max; i++)
 		{
 			char currChar = chars[i];
-			// TODO fix this because it is wrong.
+			// TODO fix this because it is wrong (or at least sub-optimal).
 			char nextChar = chars[i];
 
+			if(characterEvaluater.isPunctuation(currChar))
+			{
+				if(length > 0)
+				{
+					words.add(str.substring(0, length));
+					length = 0;
+				}
+				
+				System.out.println("here3");
+				words.add(new String("" +currChar));
+				continue;
+			}
 			if (characterEvaluater.isAlphaOrDashFollowedByAlpha(currChar, nextChar))
 			{
 				str.setCharAt(length, currChar);
@@ -47,15 +62,9 @@ public class DocumentScanner
 			}
 			else if (length > 0)
 			{
-				// if(matchCase || true) {
+				System.out.println("here2");
 				words.add(str.substring(0, length));
-				// } else {
-				// //System.out.println("Using lower case");
-				// String newString = new String(str.substring(0,
-				// length).toLowerCase());
-				// words.add(newString);
-				// //System.out.print(newString + ' ');
-				// }
+			
 				total += length;
 				length = 0;
 			}
@@ -70,16 +79,64 @@ public class DocumentScanner
 		return words;
 	}
 
+	private static List<String> tokenize_string_without_punctuation(String string)
+	{
+		char[] chars = string.toCharArray();
+
+		/*
+		 * assume that the average word length is 7
+		 */
+		List<String> words = new ArrayList<String>(chars.length / 8);
+		
+		StringBuilder str = new StringBuilder();
+		str.setLength(30);
+
+		int total = 0;
+		int length = 0;
+		int max = chars.length;
+
+		// for(int i = 0; i < max; i++) {
+		// char currChar = chars[i];
+		// //System.out.print(currChar);
+		// }
+
+		for (int i = 0; i < max; i++)
+		{
+			char currChar = chars[i];
+			// TODO fix this because it is wrong (or at least sub-optimal).
+			char nextChar = chars[i];
+
+			if (characterEvaluater.isAlphaOrDashFollowedByAlpha(currChar, nextChar))
+			{
+				str.setCharAt(length, currChar);
+				// System.out.print(currChar);
+				length++;
+			}
+			else if (length > 0)
+			{
+				words.add(str.substring(0, length));
+			
+				total += length;
+				length = 0;
+			}
+		}
+
+		System.out.println("Total length: " + total);
+		// System.out.println("Predicted length: " + chars.length / 8);
+		System.out.println("Average length: " + total / words.size());
+
+		assert (chars.length == 0 || words.size() > 0);
+
+		return words;
+	}
 
 	public static String readInFileToString(String path) throws IOException
 	{
 		FileInputStream fis = null;
 		// InputStreamReader in = null;
-
-		// try
-		// {
-		fis = new FileInputStream(path);
 		
+		fis = new FileInputStream(path);
+
 		String returnString = "";
 		if (fis != null)
 		{
@@ -88,20 +145,7 @@ public class DocumentScanner
 			// String newLine = read(f.toString(), "unicode");
 		}
 		fis.close();
-		// }
-		// catch (UnsupportedEncodingException e)
-		// {
-		// e.printStackTrace();
-		// }
-		// catch (FileNotFoundException e1)
-		// {
-		// e1.printStackTrace();
-		// }
-		// catch (IOException e)
-		// {
-		// e.printStackTrace();
-		// }
-		
+
 		return returnString;
 	}
 
@@ -126,11 +170,10 @@ public class DocumentScanner
 		return text.toString();
 	}
 
-
 	public static List<String> tokenizeFromFile(String path) throws IOException
 	{
 		String primarySourceText = readInFileToString(path);
-		List<String> words1 = tokenizeString(primarySourceText);
+		List<String> words1 = tokenize_string_with_punctuation(primarySourceText);
 		return words1;
 	}
 }

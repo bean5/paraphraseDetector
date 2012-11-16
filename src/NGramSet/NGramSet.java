@@ -28,7 +28,6 @@ public interface NGramSet {
 	String toString();
 	
 	boolean hasMatches();
-	boolean isStopWord(String word);
 	
 	List<String> getDocument();
 
