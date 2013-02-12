@@ -7,6 +7,7 @@ import java.util.List;
 import fileio.DocumentSaver;
 import fileio.DocumentScanner;
 
+import CharacterData.StopWordChecker;
 import NGramSet.NGramSet;
 import NGramSet.NGramSetImpl;
 
@@ -298,5 +299,10 @@ public class InterTextualFinder
 	public void setPrintBestScoresOnly(boolean selected)
 	{
 		this.printBestOnly = selected;
+	}
+
+	public void setStopWords(String string, boolean ignoreCase)
+	{
+		StopWordChecker.setStopWords(DocumentScanner.tokenize_string_as_delimited(string, ','), ignoreCase);
 	}
 }

@@ -129,6 +129,64 @@ public class DocumentScanner
 
 		return words;
 	}
+	
+	public static List<String> tokenize_string_as_delimited(String string, char delimiter)
+	{
+//		System.out.println("stops: " + string);
+//		string = string.trim();
+		char[] chars = string.toCharArray();
+		
+		/*
+		 * assume that the average word length is 7
+		 */
+		List<String> words = new ArrayList<String>(chars.length / 8);
+		
+		StringBuilder str = new StringBuilder();
+		str.setLength(30);
+		
+		int total = 0;
+		
+		char currChar = chars[0];
+		
+		int i = 0;
+		int length = 0;
+		while(true)
+		{
+//			System.out.println("i: " + i);
+//			if(length > 0)
+//				System.out.println("str: " + str.substring(0, length));
+//			System.out.println("stopsb: " + words);
+			while(i < chars.length && chars[i] != ',')
+			{
+				str.setCharAt(length, chars[i]);
+				length++;
+				i++;
+			}
+			if(length > 0)
+			{
+				words.add(str.substring(0, length--).trim());
+				length = 0;
+			}
+			i++;
+			if(i >= chars.length)
+				break;
+		}
+
+		System.out.println("Total length: " + total);
+		// System.out.println("Predicted length: " + chars.length / 8);
+		System.out.println("Average length: " + total / words.size());
+
+		//assert (chars.length == 0 || words.size() > 0);
+//		System.out.println("stopsc: " + words);
+//		System.exit(0);
+		
+		return words;
+	}
+
+	public static List<String> readInFileToString_Delimited(String path, char delimiter) throws IOException
+	{
+		return tokenize_string_as_delimited(readInFileToString(path), delimiter);
+	}
 
 	public static String readInFileToString(String path) throws IOException
 	{

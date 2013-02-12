@@ -1,5 +1,6 @@
 package GUILooper;
 
+import fileio.DocumentScanner;
 import interTextFinder.InterTextualFinder;
 import interTextFinder.InterTextualFinderLooper;
 
@@ -7,6 +8,7 @@ import javax.swing.*;
 //import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 import java.io.IOException;
 
 /*
@@ -20,8 +22,10 @@ public class GuiLooper
 	private JFrame								f									= new JFrame("GUI Looper");			// create
 																																		// Frame
 	private JPanel								pnlNorth							= new JPanel();							// North
-																																		// quadrant
-	private JPanel								pnlCenter						= new JPanel();							// Center
+	// quadrant
+	private JPanel								pnlCenter						= new JPanel();							// North
+	// quadrant
+	private JPanel								pnlCenterb						= new JPanel();							// Center
 																																		// quadrant
 	private JPanel								pnlSouth							= new JPanel();							// South
 																																		// quadrant
@@ -44,9 +48,13 @@ public class GuiLooper
 																						 +
 																						 "19-324a.txt");
 //																										+ "test4.txt");
+	private JTextField						txtFieldFileStopWords		= new JTextField(corporaBaseDir
+					 +
+					 "stopwords.txt");
 
 	private JLabel								lblFilePrimary					= new JLabel("Primary File");
 	private JLabel								lblFileSecondary				= new JLabel("Secondary File");
+	private JLabel								lblFileStopWords				= new JLabel("Stopwords File");
 
 	private JTextField						txtFieldOutFile				= new JTextField(resultsBaseDir
 																										+ "results.txt");
@@ -94,6 +102,7 @@ public class GuiLooper
 																										// false);
 																										true);
 
+	private JTextArea							textArea_stopWords			= new JTextArea(10, 20);
 	private JTextArea							textArea							= new JTextArea(20, 80);
 
 	/** Constructor for the GUI */
@@ -119,6 +128,7 @@ public class GuiLooper
 
 		txtFieldFilePrimary.setColumns(20);
 		txtFieldFileSecondary.setColumns(20);
+		txtFieldFileStopWords.setColumns(20);
 		txtFieldOutFile.setColumns(20);
 
 		// Add Buttons
@@ -128,13 +138,22 @@ public class GuiLooper
 		pnlCenter.add(lblFileSecondary);
 		pnlCenter.add(txtFieldFileSecondary);
 
+		pnlCenterb.add(lblFileStopWords);
+		pnlCenterb.add(txtFieldFileStopWords);
+
 		pnlSouth.add(lblFileOut);
 		pnlSouth.add(txtFieldOutFile);
 
 		JPanel mainBox = new JPanel();
 		mainBox.setLayout(new BorderLayout());
 		mainBox.add(pnlNorth, BorderLayout.NORTH);
-		mainBox.add(pnlCenter, BorderLayout.CENTER);
+		
+		JPanel mainBox_sub = new JPanel();
+		mainBox_sub.setLayout(new BorderLayout());
+		mainBox_sub.add(pnlCenter, BorderLayout.NORTH);
+		mainBox_sub.add(pnlCenterb, BorderLayout.CENTER);
+		
+		mainBox.add(mainBox_sub, BorderLayout.CENTER);
 		mainBox.add(pnlSouth, BorderLayout.SOUTH);
 
 		JPanel secondMainBox = new JPanel();
@@ -146,7 +165,6 @@ public class GuiLooper
 		options.add(checkPorterStemmer);
 		options.add(checkUseStopWords);
 		options.add(checkMaximizePrimaryWindow);
-		// options.add(checkBestScoresOnly);
 
 		// JPanel secondOptions = new JPanel();
 		// minSecondaryMatches.setColumns(3);
@@ -166,6 +184,12 @@ public class GuiLooper
 		//
 		secondMainBox.add(mainBox, BorderLayout.NORTH);
 		secondMainBox.add(options, BorderLayout.CENTER);
+		
+		textArea_stopWords.setMargin(new Insets(5, 5, 5, 5));
+		textArea_stopWords.setEditable(true);
+		JScrollPane stopWordsScrollPane = new JScrollPane(textArea_stopWords);
+		secondMainBox.add(stopWordsScrollPane, BorderLayout.EAST);
+		
 		// secondMainBox.add(secondOptions, BorderLayout.SOUTH);
 
 		// Setup Main Frame
@@ -187,11 +211,17 @@ public class GuiLooper
 
 		// Add listeners
 		btnRun.addActionListener(clicked);
+
+		txtFieldFileStopWords.addActionListener(clicked);
+		checkUseStopWords.addActionListener(clicked);
 		checkMaximizePrimaryWindow.addActionListener(clicked);
 		checkBestScoresOnly.addActionListener(clicked);
 		mnuItemSave.addActionListener(clicked);
 		mnuItemAbout.addActionListener(clicked);
 		mnuItemQuit.addActionListener(new ListenMenuQuit());
+		
+		((Clicked) clicked).displayStopWords();
+		//((Clicked) clicked).run_find_given_parameters();
 	}
 
 	/*
@@ -222,44 +252,22 @@ public class GuiLooper
 	public class Clicked implements ActionListener
 	{
 		// private JFileChooser fc;
-
+		
 		public void actionPerformed(ActionEvent e)
 		{
 			Object source = e.getSource();
 			// System.out.println(e.getActionCommand());
 			if (source == btnRun)
 			{
-				min.selectAll();
-				min.setCaretPosition(min.getDocument().getLength());
-				// if(true) return;
-
-				finder.setPrimaryPath(txtFieldFilePrimary.getText().trim());
-				finder.setSecondaryPath(txtFieldFileSecondary.getText().trim());
-
-				finder.setMinimumScore(Integer.parseInt(min.getText().trim()));
-				// finder.setWindowSize(Integer.parseInt(max.getText().trim()));
-				// finder.setMinimumSecondaryMatches(Integer
-				// .parseInt(minSecondaryMatches.getText().trim()));
-
-				finder.setMatchCase(checkMatchCase.isSelected());
-				finder.setStrictness(checkStrict.isSelected());
-				finder.setUsePorterStemmer(checkPorterStemmer.isSelected());
-				finder.setMaximizePrimaryWindow(checkMaximizePrimaryWindow.isSelected());
-				finder.setUseStopWords(checkUseStopWords.isSelected());
-				finder.setPrintBestScoresOnly(checkBestScoresOnly.isSelected());
-
-				boolean noError = true;
-				try
-				{
-					finder.findIntertextQuotesFromFiles();
-				}
-				catch (IOException e1)
-				{
-					noError = false;
-					textArea.setText(e1.toString());
-				}
-
-				if (noError) textArea.setText(finder.toString());
+				run_find_given_parameters();
+			}
+			else if (source == txtFieldFileStopWords)
+			{
+				displayStopWords();
+			}
+			else if (source == checkUseStopWords)
+			{
+				displayStopWords();
 			}
 			else if (source == mnuItemSave)
 			{
@@ -300,25 +308,100 @@ public class GuiLooper
 			}
 		}
 
-		public void mouseClicked(MouseEvent e)
+		public void displayStopWords()
 		{
+			String stopWordsAsString;
+			if(checkUseStopWords.isSelected() == false)
+			{
+				stopWordsAsString = "";
+			}
+			else
+			{
+				try
+				{
+					stopWordsAsString = DocumentScanner.readInFileToString(txtFieldFileStopWords.getText());
+					stopWordsAsString = stopWordsAsString.replace(", ", ",");
+					stopWordsAsString = stopWordsAsString.replace(",", ",\n");
+				}
+				catch(IOException ioe)
+				{
+					stopWordsAsString = "";
+				}
+			}
+			textArea_stopWords.setText(stopWordsAsString);
 		}
 
-		public void mousePressed(MouseEvent e)
+		public void run_find_given_parameters()
 		{
+			textArea.setText("Running...");
+			min.selectAll();
+			min.setCaretPosition(min.getDocument().getLength());
+			// if(true) return;
+
+			finder.setPrimaryPath(txtFieldFilePrimary.getText().trim());
+			finder.setSecondaryPath(txtFieldFileSecondary.getText().trim());
+			
+			if(checkUseStopWords.isSelected())
+				finder.setStopWords(textArea_stopWords.getText(), checkMatchCase.isSelected());
+
+			finder.setMinimumScore(Integer.parseInt(min.getText().trim()));
+			// finder.setWindowSize(Integer.parseInt(max.getText().trim()));
+			// finder.setMinimumSecondaryMatches(Integer
+			// .parseInt(minSecondaryMatches.getText().trim()));
+
+			finder.setMatchCase(checkMatchCase.isSelected());
+			finder.setStrictness(checkStrict.isSelected());
+			finder.setUsePorterStemmer(checkPorterStemmer.isSelected());
+			finder.setMaximizePrimaryWindow(checkMaximizePrimaryWindow.isSelected());
+			finder.setUseStopWords(checkUseStopWords.isSelected());
+			finder.setPrintBestScoresOnly(checkBestScoresOnly.isSelected());
+
+			boolean noError = true;
+			try
+			{
+				finder.findIntertextQuotesFromFiles();
+			}
+			catch (IOException e1)
+			{
+				noError = false;
+				textArea.setText(e1.toString());
+			}
+
+			if (noError) textArea.setText(finder.toString());
 		}
 
-		public void mouseReleased(MouseEvent e)
+		private java.util.List<String> getStopWords()
 		{
+			String stop_words_path = txtFieldFileStopWords.getText().trim();
+			File f = new File(stop_words_path);
+			if(f.exists() && f.isFile() && f.canRead())
+			{
+				char comma = ',';
+				
+				java.util.List<String> words = null;
+				try
+				{
+					words = DocumentScanner.readInFileToString_Delimited(stop_words_path, comma);
+				}
+				catch(Exception e)
+				{
+					return words;
+				}
+				return words;
+			}
+			else
+				return null;
 		}
 
-		public void mouseEntered(MouseEvent e)
-		{
-		}
+		public void mouseClicked(MouseEvent e) {}
 
-		public void mouseExited(MouseEvent e)
-		{
-		}
+		public void mousePressed(MouseEvent e) {}
+
+		public void mouseReleased(MouseEvent e) {}
+
+		public void mouseEntered(MouseEvent e) {}
+
+		public void mouseExited(MouseEvent e) {}
 	}
 
 	// Display Frame

@@ -9,7 +9,6 @@ import NGramSet.NGramSetImpl;
 public class NotFuzzySearchDocumentComparer<T1 extends NGramSet> extends
 				FuzzyNGramDocumentComparer<T1> implements DocumentCommonalityFinder
 {
-
 	/*
 	 * (non-Javadoc)
 	 * 
