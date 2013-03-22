@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -135,51 +136,21 @@ public class DocumentScanner
 //		System.out.println("stops: " + string);
 //		string = string.trim();
 		char[] chars = string.toCharArray();
-		
 		/*
 		 * assume that the average word length is 7
 		 */
 		List<String> words = new ArrayList<String>(chars.length / 8);
 		
-		StringBuilder str = new StringBuilder();
-		str.setLength(30);
+		if(string.length() <= 0)
+			return words;
 		
-		int total = 0;
+		String[] words_array = string.split("" + delimiter);
 		
-		char currChar = chars[0];
+//		System.out.println(Arrays.toString(words_array));
 		
-		int i = 0;
-		int length = 0;
-		while(true)
-		{
-//			System.out.println("i: " + i);
-//			if(length > 0)
-//				System.out.println("str: " + str.substring(0, length));
-//			System.out.println("stopsb: " + words);
-			while(i < chars.length && chars[i] != ',')
-			{
-				str.setCharAt(length, chars[i]);
-				length++;
-				i++;
-			}
-			if(length > 0)
-			{
-				words.add(str.substring(0, length--).trim());
-				length = 0;
-			}
-			i++;
-			if(i >= chars.length)
-				break;
-		}
+		for(String s : words_array)
+			words.add(s);
 
-		System.out.println("Total length: " + total);
-		// System.out.println("Predicted length: " + chars.length / 8);
-		System.out.println("Average length: " + total / words.size());
-
-		//assert (chars.length == 0 || words.size() > 0);
-//		System.out.println("stopsc: " + words);
-//		System.exit(0);
-		
 		return words;
 	}
 
