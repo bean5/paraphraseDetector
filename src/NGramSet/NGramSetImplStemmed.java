@@ -45,7 +45,7 @@ public class NGramSetImplStemmed extends NGramSetImpl implements NGramSet
 		stem.stem();
 
 		String stemmed = stem.toString();
-		// System.out.println("Word stemmed:\t" + word + ":" + stemmed);
+		// System.out.println("Word stemmed:\t" + original + ":" + stemmed);
 		return stemmed;
 	}
 }

@@ -37,7 +37,7 @@ package CharacterData;
 /**
  * Stemmer, implementing the Porter Stemming Algorithm
  * 
- * The Stemmer class transforms a word into its root form. The input word can be
+ * The Stemmer class transforms a original into its root form. The input original can be
  * provided a character at time (by calling add()), or at once by calling one of
  * the various stem(something) methods.
  */
@@ -45,7 +45,7 @@ package CharacterData;
 public class PorterStemmer {
 	private char[] b;
 	private int i, /* offset into b */
-	i_end, /* offset to end of stemmed word */
+	i_end, /* offset to end of stemmed original */
 	j, k;
 	private static final int INC = 50;
 
@@ -57,8 +57,8 @@ public class PorterStemmer {
 	}
 
 	/**
-	 * Add a character to the word being stemmed. When you are finished adding
-	 * characters, you can call stem(void) to stem the word.
+	 * Add a character to the original being stemmed. When you are finished adding
+	 * characters, you can call stem(void) to stem the original.
 	 */
 	public void add(char ch) {
 		if (i == b.length) {
@@ -71,7 +71,7 @@ public class PorterStemmer {
 	}
 
 	/**
-	 * Adds wLen characters to the word being stemmed contained in a portion of
+	 * Adds wLen characters to the original being stemmed contained in a portion of
 	 * a char[] array. This is like repeated calls of add(char ch), but faster.
 	 */
 
@@ -87,7 +87,7 @@ public class PorterStemmer {
 	}
 
 	/**
-	 * After a word has been stemmed, it can be retrieved by toString(), or a
+	 * After a original has been stemmed, it can be retrieved by toString(), or a
 	 * reference to the internal buffer can be retrieved by getResultBuffer and
 	 * getResultLength (which is generally more efficient.)
 	 */
@@ -96,7 +96,7 @@ public class PorterStemmer {
 	}
 
 	/**
-	 * Returns the length of the word resulting from the stemming process.
+	 * Returns the length of the original resulting from the stemming process.
 	 */
 	public int getResultLength() {
 		return i_end;
@@ -188,7 +188,7 @@ public class PorterStemmer {
 	/*
 	 * cvc(i) is true <=> i-2,i-1,i has the form consonant - vowel - consonant
 	 * and also if the second c is not w,x or y. this is used when trying to
-	 * restore an e at the end of a short word. e.g.
+	 * restore an e at the end of a short original. e.g.
 	 * 
 	 * cav(e), lov(e), hop(e), crim(e), but snow, box, tray.
 	 */
@@ -534,8 +534,8 @@ public class PorterStemmer {
 	}
 
 	/**
-	 * Stem the word placed into the Stemmer buffer through calls to add().
-	 * Returns true if the stemming process resulted in a word different from
+	 * Stem the original placed into the Stemmer buffer through calls to add().
+	 * Returns true if the stemming process resulted in a original different from
 	 * the input. You can retrieve the result with
 	 * getResultLength()/getResultBuffer() or toString().
 	 */
@@ -555,8 +555,8 @@ public class PorterStemmer {
 
 	/**
 	 * Test program for demonstrating the Stemmer. It reads text from a a list
-	 * of files, stems each word, and writes the result to standard output. Note
-	 * that the word stemmed is expected to be in lower case: forcing lower case
+	 * of files, stems each original, and writes the result to standard output. Note
+	 * that the original stemmed is expected to be in lower case: forcing lower case
 	 * must be done outside the Stemmer class. Usage: Stemmer file-name
 	 * file-name ...
 	 */
@@ -625,10 +625,10 @@ public class PorterStemmer {
 	// }
 	// }
 
-//	public String run(String word) {
+//	public String run(String original) {
 //		char[] w = new char[501];
 //		Stemmer s = new Stemmer();
-//		char[] letters = word.toCharArray();
+//		char[] letters = original.toCharArray();
 //
 //		for (int i = 0; i < letters.length; i++) {
 //			int ch = letters[i];
@@ -663,7 +663,7 @@ public class PorterStemmer {
 //					 * s.getResultLength());
 //					 */
 //
-//					System.out.print("Word stemmed from " + word+ " to " + u);
+//					System.out.print("Word stemmed from " + original+ " to " + u);
 //					return u;
 //					// break;
 //				}

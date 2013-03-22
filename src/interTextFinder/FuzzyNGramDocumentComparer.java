@@ -134,7 +134,7 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 				processedWord = current.processWord(words.get(i));
 
 				// if map is null, then tracking doesn't matter
-				// if processWord was null, it was a stop-word
+				// if processWord was null, it was a stop-original
 				if (map != null && processedWord != null)
 				{
 					// System.out.println("Mapping: " + current.toString() + " for "
