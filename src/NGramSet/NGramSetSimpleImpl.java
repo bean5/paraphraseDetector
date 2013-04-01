@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 public class NGramSetSimpleImpl implements NGramSet {
 	protected static int maxSize;
@@ -21,8 +22,8 @@ public class NGramSetSimpleImpl implements NGramSet {
 	public NGramSetSimpleImpl(int size) {initialize(size);}
 	public NGramSetSimpleImpl(NGramSet other) {
 		initialize(other.size());
-		side = other.getSide();
-		for(String str : other.getWordList()) {
+//		side = other.getSide();
+		for(String str : other.getModifiedWordList()) {
 			processWord(str);
 		}
 	}
@@ -38,7 +39,7 @@ public class NGramSetSimpleImpl implements NGramSet {
 	public void addWord(String word) {
 		words.add(word);
 	}
-	public void processWord(String word) {
+	public String processWord(String word) {
 		addWord(word);
 		position = count;
 		count++;
@@ -49,6 +50,7 @@ public class NGramSetSimpleImpl implements NGramSet {
 		else {
 			wordCounts.put(word, 1);
 		}
+		return words.get(words.size() - 1);
 	}
 	
 	public void popFirstWord() {
@@ -232,4 +234,117 @@ public class NGramSetSimpleImpl implements NGramSet {
 	public int getSide() {return side;}
 	
 	public int hashCode() {return position*3 * words.hashCode();}
+	@Override
+	public int consume(HashMap<String, List<NGramSet>> map)
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	@Override
+	public void setDocument(List<String> words)
+	{
+		// TODO Auto-generated method stub
+	}
+	@Override
+	public List<String> getModifiedWordList()
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public void setMinScore(double d)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public double getMinRequiredScore()
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	@Override
+	public int get_window_size()
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	@Override
+	public boolean hasMatches()
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+	@Override
+	public List<String> getDocument()
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public int getPosition()
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	@Override
+	public double findBestScore()
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	@Override
+	public boolean hasMatchesOfAtLeastScore(double minscore)
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+	@Override
+	public String toStringAtLeast(double minscore)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public int countMatchesOfAtLeastScore(double minscore)
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	@Override
+	public TreeMap<Double, Integer> getScores()
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public double getScore(NGramSet set)
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	@Override
+	public void filterMatchesWithScoresLowerThan(double bestScore)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public int getTotalCount()
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	@Override
+	public void computeScore(int integer, NGramSet set)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public double lowestScore()
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

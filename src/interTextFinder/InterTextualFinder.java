@@ -31,43 +31,79 @@ public class InterTextualFinder
 	private boolean															printBestOnly					= true;
 
 	protected ComparerStatistics											stats;
+	protected double	lastRunTime;
+	protected long	lastStartTime;
 
 	/*
 	 * Starts a timer, reads in files, and calls string version of function
 	 */
 	public void findIntertextQuotesFromFiles() throws IOException
 	{
-		double start = System.currentTimeMillis();
+		List<String> word_list1 = DocumentScanner.tokenizeFromFile(primarySourcePath);
+		List<String> word_list2 = DocumentScanner.tokenizeFromFile(secondarySourcePath);
 
-		List<String> words1 = DocumentScanner.tokenizeFromFile(primarySourcePath);
-		List<String> words2 = DocumentScanner.tokenizeFromFile(secondarySourcePath);
+		findIntertextQuotesGivenParamsFromTokenizedLists(word_list1, word_list2);
+	}
+
+	public void findIntertextQuotesGivenParamsFromStrings(String text_1, String text_2)
+	{
+		setStart();
+
+		List<String> words1 = DocumentScanner.tokenize_string_with_punctuation(text_1);
+		List<String> words2 = DocumentScanner.tokenize_string_with_punctuation(text_2);
 
 		findIntertextQuotesGivenParamsFromTokenizedLists(words1, words2);
 
-		double end = System.currentTimeMillis();
-		double totalTime = end - start;
-		totalTime /= (1000 * 6);// convert to minutes
-		totalTime = totalTime / 10;
+		setRunTime();
 
-		paramString = convertParametersToString(totalTime, comparer.errorsToString());
-		System.out.println(paramString);
+		setParamString();
+		print();
 	}
 
-	public void findIntertextQuotesGivenParamsFromTokenizedLists(List<String> words1,
-					List<String> words2)
+	public void findIntertextQuotesGivenParamsFromTokenizedLists(List<String> word_list1, List<String> word_list2)
 	{
+		setStart();
+
 		// if (maximizePrimaryWindowSize) minimum_score = 1;
 		comparer.setMatchCase(matchCase);
 		comparer.setStrict(strictSearch);
 		comparer.setPorterStemmerUsage(usePorterStemmer);
 		comparer.setUseStopWords(useStopWords);
 
-		commonNGrams = comparer.findCommonNGrams(words1, words2, minimum_score, windowSize,
+		commonNGrams = comparer.findCommonNGrams(word_list1, word_list2, minimum_score, windowSize,
 						maximizePrimaryWindowSize);
 
+		setRunTime();
+		
 		stats = comparer.getStats();
 
-		filterNGrams(minimumSecondaryMatches);
+		filterNGrams(minimumSecondaryMatches);		
+
+		setParamString();
+		print();
+	}
+
+	protected void setStart()
+	{
+		lastStartTime = System.currentTimeMillis();
+	}
+
+	protected void setRunTime()
+	{
+		double end = System.currentTimeMillis();
+		lastRunTime = end - lastStartTime;
+		lastRunTime /= (1000 * 6);// convert to minutes
+		lastRunTime = lastRunTime / 10;
+	}
+
+	private void print()
+	{
+		System.out.println(paramString);
+	}
+
+	protected void setParamString()
+	{
+		paramString = convertParametersToString(lastRunTime, comparer.errorsToString());
 	}
 
 	/*
@@ -82,9 +118,7 @@ public class InterTextualFinder
 		for (NGramSet ngram : commonNGrams)
 		{
 			if (ngram.size() >= minimumSecondaryMatches)
-			{
 				filteredCommonNGrams.add(ngram);
-			}
 		}
 		commonNGrams = filteredCommonNGrams;
 	}
@@ -136,7 +170,8 @@ public class InterTextualFinder
 		{
 			double bestScoreOfNGram = nGram.findBestScore();
 
-			if (bestScoreOfNGram >= bestScore) best.add(nGram);
+			if (bestScoreOfNGram >= bestScore) 
+				best.add(nGram);
 		}
 
 		return best;
@@ -155,10 +190,9 @@ public class InterTextualFinder
 		for (NGramSet nGram : commonNGrams)
 		{
 			nGram.filterMatchesWithScoresLowerThan(bestScore);
+			
 			if (nGram.size() != 0)
-			{
 				filteredSet.add(nGram);
-			}
 		}
 		commonNGrams = filteredSet;
 	}

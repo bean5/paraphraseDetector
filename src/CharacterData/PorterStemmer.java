@@ -51,6 +51,18 @@ public class PorterStemmer {
 
 	/* unit of size whereby b is increased */
 	public PorterStemmer() {
+		init();
+	}
+	
+	public PorterStemmer(String s)
+	{
+		init();
+		for(int i = 0; i < s.length(); i++)
+			add(s.charAt(i));
+	}
+	
+	private void init()
+	{
 		b = new char[INC];
 		i = 0;
 		i_end = 0;
@@ -673,6 +685,4 @@ public class PorterStemmer {
 //		}
 //		return new String("");
 //	}
-	
-	
 }

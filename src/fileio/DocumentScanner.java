@@ -85,7 +85,7 @@ public class DocumentScanner
 		{
 			// in = new InputStreamReader(fis, "UTF-8");
 			returnString = read(path.toString(), "UTF-8");
-			// String newLine = read(f.toString(), "unicode");
+			//returnString = read(f.toString(), "unicode");
 		}
 		fis.close();
 

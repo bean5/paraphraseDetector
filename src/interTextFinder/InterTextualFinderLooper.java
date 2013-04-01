@@ -1,12 +1,10 @@
 package interTextFinder;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-import fileio.DocumentScanner;
 import NGramSet.NGramSet;
 
 public class InterTextualFinderLooper extends InterTextualFinder
@@ -18,22 +16,11 @@ public class InterTextualFinderLooper extends InterTextualFinder
 	{
 		super();
 	}
-	
-	public void findIntertextQuotesGivenParamsFromStrings(String text1, String text2)
-	{
-		List<String> words1 = DocumentScanner.tokenize_string_with_punctuation(text1);
-		List<String> words2 = DocumentScanner.tokenize_string_with_punctuation(text2);
-		
-		findIntertextQuotesGivenParamsFromTokenizedLists(words1, words2);
-	}
 
-	public void findIntertextQuotesFromFiles() throws IOException
+	public void findIntertextQuotesGivenParamsFromTokenizedLists(List<String> words1, List<String> words2)
 	{
 		best_score = 0D;
-		double start = System.currentTimeMillis();
-
-		List<String> words1 = DocumentScanner.tokenizeFromFile(primarySourcePath);
-		List<String> words2 = DocumentScanner.tokenizeFromFile(secondarySourcePath);
+		setStart();
 
 		// double min_score = 0.0D;
 		double min_score = 0.3D;
@@ -80,17 +67,17 @@ public class InterTextualFinderLooper extends InterTextualFinder
 		// System.out.println("Number of matches: " + count + " out of " + max +
 		// " searches");
 
-		super.paramString = "";
+		setRunTime();
 
-		double end = System.currentTimeMillis();
-		double totalTime = end - start;
-		totalTime /= (1000 * 6);// convert to minutes
-		totalTime = totalTime / 10;
-
-		super.paramString += convertParametersToStringWithoutWindowParameters(totalTime,
-						InterTextualFinder.comparer.errorsToString()) + all;
+		setParamString(all);
 
 		// System.out.println(super.paramString);
+	}
+
+	protected void setParamString(String all)
+	{
+		super.paramString = convertParametersToStringWithoutWindowParameters(lastRunTime,
+						InterTextualFinder.comparer.errorsToString()) + all;
 	}
 
 	private String convertParametersToStringWithoutWindowParameters(double totalTime,
@@ -111,6 +98,6 @@ public class InterTextualFinderLooper extends InterTextualFinder
 
 	public String toString()
 	{
-		return super.paramString + "\n";// + "Higest Score: " + best_score;
+		return super.paramString + "\n" + super.toString();// + "Higest Score: " + best_score;
 	}
 }

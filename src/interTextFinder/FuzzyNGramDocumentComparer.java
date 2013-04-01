@@ -29,16 +29,6 @@ public class FuzzyNGramDocumentComparer<T1 extends NGramSet> implements Document
 		errors = new ArrayList<Error>();
 		HashSet<NGramSet> NGramsWithMatches = new HashSet<NGramSet>();
 
-		// when testing, restrict the length of documents to be small
-		if (isTesting)
-		{
-			int maxSub = 1000;
-			words1 = words1.subList(0, maxSizeOutOfRangeForSource(maxSub, words1) ? words1.size()
-							: maxSub);
-			words2 = words2.subList(0, maxSizeOutOfRangeForSource(maxSub, words2) ? words2.size()
-							: maxSub);
-		}
-
 		NGramSetImpl.setMatchCase(matchCase);
 		NGramSetImpl.setUseStopWords(USESTOPWORDS);
 		NGramSetImpl.setStrictness(STRICT);
