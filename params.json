@@ -1,0 +1,7 @@
+{
+  "name": "Paraphrase Detector",
+  "tagline": "Helps find common text between two documents; uses porter stemming, windowing, and allows for save to file.",
+  "body": "### Welcome to Paraphrase Detector\r\nThis project was built to help Dr. Hilton III, of Brigham Young University to conduct his research. He did complete his work successfully. A portion of his work is available in [Textual Similarities in the Words of Abinadi and Alma's Counsel to Corianton](http://www.johnhiltoniii.com/wp-content/uploads/2008/10/51.2-HiltonIII-Textual-Similarities.pdf) (http://www.johnhiltoniii.com/wp-content/uploads/2008/10/51.2-HiltonIII-Textual-Similarities.pdf).\r\n\r\n### Requirements\r\nYou will need to compile from source by obtaining the following:\r\n* [Java 6](http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-javase6-419409.html) or [Java 7](http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html)\r\n* Source code from [https://github.com/bean5/nlp-paraphrase-detector/zipball/master](https://github.com/bean5/nlp-paraphrase-detector/zipball/master)\r\n\r\n### Support or Contact\r\nHaving trouble with Paraphrase Detector? Just leave feedback at [https://github.com/bean5/nlp-paraphrase-detector/issues/new](https://github.com/bean5/nlp-paraphrase-detector/issues/new)",
+  "google": "UA-22088552-9",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
