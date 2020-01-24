@@ -375,7 +375,7 @@ public class NGramSetImpl implements NGramSet
 		return matches.entrySet().size() > 0;
 	}
 
-	// public List<String> getWordList() {return words;}
+	// public List<String> getWordList() {return sentences;}
 	public List<String> getModifiedWordList()
 	{
 		return modifiedWords;

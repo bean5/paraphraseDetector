@@ -22,7 +22,7 @@ public class DocumentScanner
 		for(String w : words_array)
 			words.add(w);
 		
-//		System.out.println(words);
+//		System.out.println(sentences);
 		
 		return words;
 	}

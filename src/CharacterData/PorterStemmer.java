@@ -13,7 +13,7 @@ package CharacterData;
  Release 1
 
  Bug 1 (reported by Gonzalo Parra 16/10/99) fixed as marked below.
- The words 'aed', 'eed', 'oed' leave k at 'a' for step 3, and b[k-1]
+ The sentences 'aed', 'eed', 'oed' leave k at 'a' for step 3, and b[k-1]
  is then out outside the bounds of b.
 
  Release 2

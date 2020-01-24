@@ -2,6 +2,5 @@
 <classpath>
 	<classpathentry excluding="bean5_FileChooserDemo2Project/|bean5_FileChooserDemo2Project/nbproject/|bean5_FileChooserDemo2Project/src/components/|bean5_FileChooserDemo2Project/src/components/images/|bean5_FileChooserDemoProject/|bean5_FileChooserDemoProject/nbproject/|bean5_FileChooserDemoProject/src/components/|bean5_FileChooserDemoProject/src/components/images/|NGramSet/NGramSetSimpleImpl.java|intertextGUI/ActionListenerImpl.java|intertextGUI/BasicGui.java|interTextFinder/NotFuzzySearchDocumentComparer.java" kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry kind="lib" path="C:/Users/bean5/Dropbox/workspace/lukeall-4.0.0-ALPHA.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

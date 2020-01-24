@@ -227,8 +227,8 @@ public class InterTextualFinder
 
 	protected String sourcePathsAsString()
 	{
-		return "Primary Source: " + primarySourcePath + "\n" + "Secondary Source: "
-						+ secondarySourcePath + "\n";
+		return "Primary Source: " + ((primarySourcePath != null) ? primarySourcePath : "(not from file)") + "\n" + "Secondary Source: "
+						+ ((secondarySourcePath != null) ? secondarySourcePath : "(not from file)") + "\n";
 	}
 
 	protected String checkBoxParamsAsString()
